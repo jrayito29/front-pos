@@ -1,0 +1,78 @@
+/*
+  Deccode — Design tokens de color
+  Basado en marca-deccode.md
+  Uso: importar este archivo y aplicar [data-theme="dark"] al elemento raíz
+  para activar el tema oscuro. Por defecto se sirve el tema claro.
+*/
+
+:root,
+[data-theme="light"] {
+  /* Fondos */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eaeef2;
+
+  /* Texto */
+  --text-primary: #0d1117;
+  --text-secondary: #57606a;
+  --text-muted: #8b949e;
+
+  /* Bordes */
+  --border: #d0d7de;
+  --border-strong: #afb8c1;
+
+  /* Marca — verde (acento principal / éxito / recomendado) */
+  --brand-green: #1d9e75; /* fills, botones, badges */
+  --brand-green-hover: #178264;
+  --brand-green-bg: #e1f5ee; /* fondo tenue para banners/badges */
+  --brand-green-text: #0f6e56; /* uso en texto sobre fondo claro */
+
+  /* Marca — coral (acento secundario / alerta / diferencia) */
+  --brand-coral: #f0997b;
+  --brand-coral-hover: #e37e5a;
+  --brand-coral-bg: #faece7;
+  --brand-coral-text: #993c1d; /* uso en texto sobre fondo claro */
+
+  /* Marca — morado (atributos / terciario) */
+  --brand-purple: #7f77dd;
+  --brand-purple-bg: #eeedfe;
+  --brand-purple-text: #534ab7;
+
+  /* Sombra / elevación (sutil, el sistema es flat) */
+  --shadow-sm: 0 1px 2px rgba(13, 17, 23, 0.06);
+}
+
+[data-theme="dark"] {
+  /* Fondos */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #21262d;
+
+  /* Texto */
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+
+  /* Bordes */
+  --border: #30363d;
+  --border-strong: #3d444d;
+
+  /* Marca — verde */
+  --brand-green: #1d9e75;
+  --brand-green-hover: #26b588;
+  --brand-green-bg: #04342c;
+  --brand-green-text: #5dcaa5; /* más claro para leer sobre fondo oscuro */
+
+  /* Marca — coral */
+  --brand-coral: #f0997b;
+  --brand-coral-hover: #f5b294;
+  --brand-coral-bg: #4a1b0c;
+  --brand-coral-text: #f0997b;
+
+  /* Marca — morado */
+  --brand-purple: #7f77dd;
+  --brand-purple-bg: #26215c;
+  --brand-purple-text: #afa9ec;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+}

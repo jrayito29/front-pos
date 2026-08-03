@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "./brand.css";
+
+@config "../tailwind.config.ts";
+
+body {
+  @apply bg-background text-foreground antialiased;
+}
