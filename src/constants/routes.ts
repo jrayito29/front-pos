@@ -14,4 +14,7 @@ export const ROUTES = {
   COMPLETAR_PERFIL: '/completar-perfil',
   DASHBOARD: '/',
   SYSADMIN: '/admin',
+  // SPEC-007 REQ-E2 — destino de RequirePermission cuando el módulo no está activo para el usuario.
+  // No es /login: la sesión sigue siendo válida, es un problema de autorización, no de autenticación.
+  NO_AUTORIZADO: '/no-autorizado',
 } as const;

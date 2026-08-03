@@ -41,7 +41,9 @@ describe('RequireOnboarding', () => {
   // navegación al dashboard (ver test/app/CompletarPerfilFlow.test.tsx para el repro end-to-end).
   it('no redirige a /login si onboardingToken es null pero ya hay accessToken (sesión promovida a tenant)', () => {
     vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
-    useSessionStore.getState().setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1' });
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-1', empresaId: 'empresa-1' });
 
     renderGuard();
 

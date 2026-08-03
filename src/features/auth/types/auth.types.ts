@@ -4,6 +4,10 @@
 export interface LoginTenantResponse {
   accessToken: string;
   refreshToken: string;
+  // Expuestos explícitos para armar x-usuario-id/x-empresa-id sin decodificar el JWT (CLAUDE.md §6).
+  // Ref: SPEC-007 REQ-U7, api-pos RESPUESTA-002-contexto-tenant-login.md
+  usuarioId: string;
+  empresaId: string;
   perfilCompleto: true;
   sessionConflict?: boolean;
   subscriptionExpired?: boolean;

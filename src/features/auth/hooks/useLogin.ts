@@ -19,6 +19,7 @@ const INLINE_ERROR_CODES = new Set([
 export function useLogin() {
   const navigate = useNavigate();
   const setTenantSession = useSessionStore((state) => state.setTenantSession);
+  const setSysAdminSession = useSessionStore((state) => state.setSysAdminSession);
   const setOnboardingSession = useSessionStore((state) => state.setOnboardingSession);
 
   return useMutation<LoginResponse, ApiError, LoginFormValues>({
@@ -26,7 +27,7 @@ export function useLogin() {
     onSuccess: (data) => {
       // LoginSysAdminResponse no trae `perfilCompleto` — REQ-E7
       if (!('perfilCompleto' in data)) {
-        setTenantSession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+        setSysAdminSession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
         navigate(ROUTES.SYSADMIN);
         return;
       }
@@ -48,6 +49,8 @@ export function useLogin() {
       setTenantSession({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
+        usuarioId: data.usuarioId,
+        empresaId: data.empresaId,
         mustChangePassword: data.mustChangePassword,
         requiereSeleccionSucursal: data.requiereSeleccionSucursal,
       });

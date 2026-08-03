@@ -55,7 +55,7 @@ describe('useCompletarPerfil', () => {
     expect(completarPerfilSpy.mock.calls[0][0]).toEqual(formValues);
   });
 
-  // spec:SPEC-004:REQ-E4
+  // spec:SPEC-004:REQ-E4 / spec:SPEC-007:REQ-U7
   it('al resolver con éxito, persiste la sesión de tenant (limpiando onboarding) y navega al dashboard', async () => {
     vi.spyOn(authService, 'completarPerfil').mockResolvedValue({
       accessToken: 'access-1',
@@ -74,6 +74,10 @@ describe('useCompletarPerfil', () => {
 
     expect(useSessionStore.getState().accessToken).toBe('access-1');
     expect(useSessionStore.getState().onboardingToken).toBeNull();
+    // spec:SPEC-007:REQ-U7 — usuarioId no cambia (PerfilCompletoResponse no lo retorna, se conserva
+    // el de la sesión de onboarding); empresaId sí llega en la respuesta.
+    expect(useSessionStore.getState().usuarioId).toBe('u1');
+    expect(useSessionStore.getState().empresaId).toBe('empresa-1');
     expect(navigateMock).toHaveBeenCalledWith('/');
   });
 

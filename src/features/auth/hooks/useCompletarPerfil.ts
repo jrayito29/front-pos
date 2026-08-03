@@ -17,17 +17,26 @@ const SILENCED_ERROR_CODES = new Set(['ERR_TOKEN_EXPIRED', 'ERR_TOKEN_INVALID'])
 export function useCompletarPerfil() {
   const navigate = useNavigate();
   const setTenantSession = useSessionStore((state) => state.setTenantSession);
+  const usuarioId = useSessionStore((state) => state.usuarioId);
   const clearSession = useSessionStore((state) => state.clearSession);
 
   return useMutation<PerfilCompletoResponse, ApiError, CompletarPerfilFormValues>({
     mutationFn: completarPerfil,
     onSuccess: (data) => {
-      // REQ-E4 — setTenantSession ya limpia onboardingToken/usuarioId (ver session.store.ts).
+      // REQ-E4 — setTenantSession ya limpia onboardingToken (ver session.store.ts). `usuarioId` no
+      // cambia respecto al login inicial y PerfilCompletoResponse no lo retorna (SPEC-007 REQ-U7
+      // adenda) — se conserva el que ya está en el store desde la sesión de onboarding, garantizado
+      // por RequireOnboarding (este hook solo se invoca con onboardingToken/usuarioId activos).
       // `navigate` de react-router usa startTransition internamente (navegación diferida), por lo
       // que RequireOnboarding puede re-renderizar con onboardingToken=null MIENTRAS la ruta todavía
       // no cambió — ver el guard tolerante en app/RequireOnboarding.tsx (acepta accessToken como
       // sesión válida) para el porqué esto no termina en un redirect a /login.
-      setTenantSession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+      setTenantSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        usuarioId: usuarioId as string,
+        empresaId: data.empresaId,
+      });
       navigate(ROUTES.DASHBOARD);
     },
     onError: (error) => {

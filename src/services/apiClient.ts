@@ -2,6 +2,11 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 import { useSessionStore } from '../stores/session.store';
 import { ROUTES } from '../constants/routes';
+import { permisosQueryKey } from '../constants/queryKeys';
+// SPEC-007 REQ-E1 — se importa el singleton de app/ (no al revés) únicamente para invalidar la
+// query de permisos ante un 403 de autorización; no hay import en sentido contrario en runtime
+// (app/queryClient.ts solo importa el tipo `ApiError` de este archivo, borrado en compilación).
+import { queryClient } from '../app/queryClient';
 
 export interface ApiError {
   code: string;
@@ -34,6 +39,11 @@ interface RetriableConfig extends InternalAxiosRequestConfig {
 // Códigos que disparan un intento de refresh transparente, tanto en la rama onboarding como en la
 // rama tenant (SPEC-005 REQ-U2) — mismo criterio de expiración/invalidez de token en ambos casos.
 const TOKEN_REFRESH_ERROR_CODES = new Set(['ERR_TOKEN_EXPIRED', 'ERR_TOKEN_INVALID']);
+
+// SPEC-007 REQ-E1 — mismo código que api-pos PERMISOS_ERRORS.PERMISSION_DENIED
+// (constants/permisos.constants.ts); el backend revalida permisos en cada request, así que el front
+// no puede confiar en su caché ante este código, sin importar qué endpoint lo devolvió.
+const PERMISSION_DENIED_ERROR_CODE = 'ERR_PERMISSION_DENIED';
 
 let pendingTenantRefresh: Promise<string> | null = null;
 
@@ -68,10 +78,20 @@ export const apiClient = axios.create({
 // SPEC-004 REQ-U10 — cuando no hay `accessToken` (sesión de tenant) pero sí `onboardingToken`
 // (sesión parcial de completar-perfil), se usa como Bearer y se adjunta `x-usuario-id` — nunca
 // `x-empresa-id` en esta rama (el backend la ignora si llega, pero no se envía por contrato).
+// SPEC-007 REQ-U9 — en la rama `accessToken` se adjuntan `x-usuario-id`/`x-empresa-id` cuando
+// existen en el store; `verificarToken.middleware.ts` los exige en toda ruta tenant. Condicionar a
+// que existan (en vez de asumirlos siempre presentes) cubre también la sesión de sysadmin, que
+// comparte el campo `accessToken` pero nunca tiene usuarioId/empresaId (setSysAdminSession).
 apiClient.interceptors.request.use((config) => {
-  const { accessToken, onboardingToken, usuarioId } = useSessionStore.getState();
+  const { accessToken, onboardingToken, usuarioId, empresaId } = useSessionStore.getState();
   if (accessToken) {
     config.headers.set('Authorization', `Bearer ${accessToken}`);
+    if (usuarioId) {
+      config.headers.set('x-usuario-id', usuarioId);
+    }
+    if (empresaId) {
+      config.headers.set('x-empresa-id', empresaId);
+    }
   } else if (onboardingToken) {
     config.headers.set('Authorization', `Bearer ${onboardingToken}`);
     if (usuarioId) {
@@ -103,7 +123,14 @@ apiClient.interceptors.response.use(
   async (error: AxiosError<ApiErrorResponse>) => {
     const apiError = toApiError(error);
     const originalRequest = error.config as RetriableConfig | undefined;
-    const { accessToken, onboardingToken, refreshToken } = useSessionStore.getState();
+    const { accessToken, onboardingToken, refreshToken, usuarioId } = useSessionStore.getState();
+
+    // SPEC-007 REQ-E1 — invalida antes de que cualquier UI dependiente de usePermisos() se renderice
+    // con el resultado desactualizado que causó este 403 (ej. un superadmin revocó el módulo durante
+    // la sesión en curso).
+    if (apiError.code === PERMISSION_DENIED_ERROR_CODE) {
+      queryClient.invalidateQueries({ queryKey: permisosQueryKey(usuarioId) });
+    }
 
     const canRetryOnboarding =
       TOKEN_REFRESH_ERROR_CODES.has(apiError.code) &&

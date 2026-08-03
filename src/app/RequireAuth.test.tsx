@@ -55,7 +55,9 @@ describe('RequireAuth', () => {
 
   it('renderiza el Outlet directo cuando ya hay accessToken en memoria', () => {
     vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
-    useSessionStore.getState().setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1' });
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-1', empresaId: 'empresa-1' });
 
     renderGuard();
 

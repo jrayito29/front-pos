@@ -40,6 +40,11 @@ export function AppRouter() {
           <Route path={ROUTES.OLVIDE_CONTRASENA} element={<RouteStub title="Recuperar contraseña" />} />
           <Route path={ROUTES.RESET_CONTRASENA} element={<RouteStub title="Restablecer contraseña" />} />
 
+          {/* SPEC-007 REQ-E2 — destino de RequirePermission cuando el módulo no está activo. No va
+              detrás de RequireAuth: si la sesión llegara a expirar entre el redirect y el render,
+              debe seguir siendo alcanzable en vez de rebotar a /login por un problema distinto. */}
+          <Route path={ROUTES.NO_AUTORIZADO} element={<RouteStub title="Acceso no autorizado" />} />
+
           {/* Onboarding — requiere onboardingToken (primer inicio de sesión, alta de empresa) */}
           <Route element={<RequireOnboarding />}>
             <Route path={ROUTES.COMPLETAR_PERFIL} element={<CompletarPerfilWizard />} />

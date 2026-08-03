@@ -4,11 +4,11 @@
 
 - **ID**: SPEC-007
 - **Dominio**: auth
-- **Versión**: 1.1.0
-- **Estado**: draft — endpoint self-service ya disponible (REQ-U1 resuelto); **bloqueada por gap nuevo de `empresaId`** (ver REQ-U7/U8/U9 / §Dependencias)
+- **Versión**: 1.2.0
+- **Estado**: active — REQ-U7 resuelto por backend (`RESPUESTA-002-contexto-tenant-login.md`), REQ-U8/U9 implementados y verificados contra el contrato real. Todos los REQ tienen test trazado (ver §Tests trazados).
 - **Owner**: `Equipo Frontend POS-MX`
 - **Creada**: 2026-07-29
-- **Última revisión**: 2026-07-29
+- **Última revisión**: 2026-08-03
 
 ## Contexto
 
@@ -32,9 +32,9 @@ La forma de dato se mantiene sin cambios, tal como se propuso: `PermisosEfectivo
 - **REQ-U4**: El sistema DEBE crear un guard `app/RequirePermission`, análogo a `RequireAuth`/`RequireOnboarding`, que reciba la clave de módulo requerida (`modulo.<clave>`) y bloquee el render del `Outlet` si `tieneModuloActivo` (REQ-U3) es `false`.
 - **REQ-U5**: El sistema DEBE combinar `RequirePermission` (REQ-U4) con el lazy-loading de rutas (SPEC-006 REQ-U1), de forma que el `import()` del chunk de una feature protegida solo se dispare cuando el usuario ya superó el guard — logrado de forma natural si `RequirePermission` envuelve la ruta y renderiza `<Navigate>` en vez de `<Outlet>` cuando el permiso es negativo, porque el componente lazy hijo nunca llega a montarse.
 - **REQ-U6**: El menú de navegación de `AppLayout` (fuera de alcance de implementación de esta spec, pero contrato que debe respetar) DEBE ocultar cualquier entrada cuyo módulo no esté activo para el usuario según `tieneModuloActivo` — no basta con bloquear la ruta; la entrada tampoco debe ser visible ni enfocable por teclado.
-- **REQ-U7** _(bloqueante, backend)_: `LoginTenantResponse` (`api-pos/src/interfaces/auth.interfaces.ts`) DEBE incluir **`usuarioId` y `empresaId`** explícitos. Se verificó el contrato actual y **faltan los dos**, no solo `empresaId`: `session.store.ts` confirma que `usuarioId` hoy solo se persiste vía `setOnboardingSession` — `setTenantSession` lo resetea a `null` explícitamente porque `LoginTenantResponse` nunca lo trajo. `PerfilCompletoResponse` (completar-perfil) sí incluye `empresaId` desde SPEC-004, pero ninguna de las dos respuestas de login/completar-perfil expone `usuarioId` en la rama tenant. Sin ambos campos, un usuario con login normal (no pasa por completar-perfil) no tiene ninguna fuente para `x-usuario-id` ni `x-empresa-id` — decodificar el JWT está prohibido por CLAUDE.md §6. Ver `frontend-a-backend/PETICION-002-contexto-tenant-login.md`.
-- **REQ-U8**: `session.store` DEBE persistir `usuarioId` y `empresaId` en la rama tenant — únicamente in-memory, mismo tratamiento que `accessToken` (nunca en `sessionStorage`, ver SPEC-005 REQ-U1): viajan siempre junto al `accessToken` para armar `x-usuario-id`/`x-empresa-id`, y son dato del mismo nivel de privilegio. `setTenantSession` DEBE aceptar ambos como parámetros obligatorios (hoy no acepta ninguno de los dos — `usuarioId` se resetea a `null` a propósito, y `empresaId` se descarta incluso cuando ya viene en la respuesta de completar-perfil, ver SPEC-004 REQ-E4).
-- **REQ-U9**: El request interceptor de `services/apiClient.ts` DEBE adjuntar `x-usuario-id` y `x-empresa-id` en la rama tenant (cuando existe `accessToken`) — hoy solo adjunta `Authorization: Bearer accessToken`. Depende de REQ-U7/U8 resueltos. Sin este REQ, ninguna petición tenant autenticada (incluida `GET /auth/permisos` de REQ-U1) puede completarse contra el backend real — el middleware `verificarToken` la rechaza con `ERR_MISSING_CONTEXT` (401).
+- **REQ-U7** _(resuelto por backend, 2026-08-03)_: `LoginTenantResponse` (`api-pos/src/interfaces/auth.interfaces.ts`) incluye **`usuarioId` y `empresaId`** explícitos, requeridos (no opcionales) cuando `perfilCompleto: true`. Ref: `api-pos/backend-a-frontend/RESPUESTA-002-contexto-tenant-login.md`, `frontend-a-backend/PETICION-002-contexto-tenant-login.md`. `LoginSysAdminResponse` no se modificó (sysadmin usa `verificarSysAdmin`, no exige estos headers) ni `PerfilCompletoResponse` (ya traía `empresaId` desde SPEC-004; no incluye `usuarioId` porque no cambia respecto al login inicial).
+- **REQ-U8** _(implementado)_: `session.store` persiste `usuarioId` y `empresaId` en la rama tenant — únicamente in-memory, mismo tratamiento que `accessToken` (nunca en `sessionStorage`, ver SPEC-005 REQ-U1): viajan siempre junto al `accessToken` para armar `x-usuario-id`/`x-empresa-id`. `setTenantSession` acepta ambos como parámetros obligatorios. `usuarioId` es un campo compartido con la rama onboarding (que sí lo persiste); `partialize` lo excluye del storage cuando `onboardingToken` es `null` (rama tenant), para no romper ese comportamiento con un solo campo compartido. `LoginSysAdminResponse` no trae `usuarioId`/`empresaId` (REQ-U7): se agregó una acción propia, `setSysAdminSession`, en vez de reusar `setTenantSession` con esos campos opcionales (habría contradicho "obligatorios" de este REQ). `useCompletarPerfil` conserva el `usuarioId` que ya existe en el store desde la sesión de onboarding (invariante garantizado por `RequireOnboarding`) y toma `empresaId` de `PerfilCompletoResponse`. Ref: `src/stores/session.store.ts`, `src/features/auth/hooks/useLogin.ts`, `src/features/auth/hooks/useCompletarPerfil.ts`.
+- **REQ-U9** _(implementado)_: El request interceptor de `services/apiClient.ts` adjunta `x-usuario-id` y `x-empresa-id` en la rama `accessToken` cuando existen en el store. Condicionar a que existan (no asumirlos siempre presentes) cubre también la sesión de sysadmin, que comparte el campo `accessToken` pero nunca tiene `usuarioId`/`empresaId`. Ref: `src/services/apiClient.ts`.
 
 ### State-driven (mientras X)
 
@@ -61,7 +61,22 @@ Cada REQ de arriba DEBE tener al menos un test que:
 
 ## Tests trazados
 
-_Pendiente — spec bloqueada en estado `draft` por el gap de backend (REQ-U1). Se completa esta sección al pasar a `active`._
+| REQ | Test |
+| --- | --- |
+| U2/U3 | `src/features/auth/hooks/usePermisos.test.ts` — `tieneModuloActivo`/`tieneAccion` |
+| U3 (fail-closed) | `usePermisos.test.ts` — casos `modulos` `undefined` |
+| U4 | `src/app/RequirePermission.test.tsx` — "renderiza el Outlet cuando el módulo está activo" |
+| U5 | `RequirePermission.test.tsx` — el redirect nunca renderiza el `Outlet`/ruta hija (mecanismo por construcción: `Navigate` en vez de `Outlet`) |
+| U7 | `src/features/auth/hooks/useLogin.test.tsx`, `src/stores/session.store.test.ts` |
+| U8 | `session.store.test.ts` (`setTenantSession`, `setSysAdminSession`, `setOnboardingSession`, `partialize`), `useCompletarPerfil.test.tsx` |
+| U9 | `src/services/apiClient.test.ts` — "adjunta x-usuario-id/x-empresa-id..." / "no adjunta... sysadmin" |
+| S1 | `RequirePermission.test.tsx` — "muestra un skeleton mientras usePermisos() está cargando" |
+| S2/E1 | `apiClient.test.ts` — "ante ERR_PERMISSION_DENIED (403)... invalida la query de permisos" |
+| E2 | `RequirePermission.test.tsx` — "redirige a /no-autorizado (no a /login)..." |
+| X1 | `RequirePermission.test.tsx` — "fail-closed: ante un error inesperado..."; `usePermisos.test.ts` |
+| X2 | Cubierto por `app/queryClient.ts` (`QueryCache.onError` global, CLAUDE.md §8) — sin test dedicado por REQ, ver §Riesgo documentado (adenda v1.2.0) |
+
+**Riesgo documentado (adenda v1.2.0)**: REQ-U6 (ocultar entradas de menú) sigue fuera de alcance de implementación de esta spec (contrato para `AppLayout`, que aún no existe como feature). REQ-U5 se cumple por construcción (mecanismo `Navigate`/`Outlet` de `RequirePermission`) pero no hay todavía una ruta de feature real protegida por permiso contra la cual verificarlo end-to-end — se validará cuando la primera feature de dominio (ventas, inventario, etc.) la consuma.
 
 ## Auditoría
 
@@ -72,15 +87,16 @@ Sin eventos de auditoría propios del front. Todo cambio de permiso (`PERM_ROLE_
 ## Dependencias
 
 - **Resuelto** (backend): endpoint de REQ-U1 — `GET /auth/permisos`, ver `api-pos/backend-a-frontend/RESPUESTA-001-permisos-self-service.md`. Ya no bloquea.
-- **Depende de** (backend, bloqueante nuevo): REQ-U7 — `usuarioId`/`empresaId` explícitos en `LoginTenantResponse`. Petición enviada: `frontend-a-backend/PETICION-002-contexto-tenant-login.md`. Sin esto, REQ-U8/U9 no pueden implementarse contra el backend real y esta spec permanece en `draft`.
+- **Resuelto** (backend): REQ-U7 — `usuarioId`/`empresaId` explícitos en `LoginTenantResponse`, ver `api-pos/backend-a-frontend/RESPUESTA-002-contexto-tenant-login.md`. REQ-U8/U9 implementados y verificados contra este contrato. Ya no bloquea.
 - **Depende de** (backend, contrato): `interfaces/permisos.interfaces.ts` (`PermisosEfectivosUsuario`, `ModuloEfectivo`, `AccionEfectiva`), `constants/permisos.constants.ts` (`PERMISOS_ERRORS.PERMISSION_DENIED` = `ERR_PERMISSION_DENIED`), `constants/auth.constants.ts` (`ROLES_CATALOGO`), `middlewares/verificarToken.middleware.ts` (contrato de headers `x-usuario-id`/`x-empresa-id` obligatorios en rama tenant, motivo de REQ-U7/U8/U9).
 - **Depende de**: SPEC-005 (Sesión Tenant) — REQ-U8 de esta spec sigue el mismo tratamiento de privilegio in-memory que SPEC-005 REQ-U1/U3 definió para `accessToken`.
 - **Depende de**: SPEC-006 (Code Splitting) — REQ-U5 de esta spec combina ambos contratos.
 - **Depende de**: SPEC-002 (Login) y SPEC-004 (Completar Perfil) — dueñas de `setTenantSession`/`LoginTenantResponse` y `PerfilCompletoResponse` respectivamente, que REQ-U7/U8 extienden.
 - **Bloquea**: toda feature de dominio (ventas, inventario, productos, almacenes, clientes, admin) que deba ocultar o bloquear UI según rol/permiso, y también cualquier feature que simplemente necesite hacer una petición tenant autenticada — ninguna debe implementar su propio manejo de `x-empresa-id` ad-hoc; todas dependen de REQ-U9 (interceptor).
-- **Riesgo documentado**: se puede adelantar el trabajo de frontend que no dependa de REQ-U7 (tipos, `RequirePermission` contra mock), pero `usePermisos`/REQ-U8/REQ-U9 no pueden validarse contra el backend real hasta que `LoginTenantResponse` incluya `usuarioId`/`empresaId` — la spec no pasa a `Estado: active` hasta entonces, para no documentar como vigente un contrato no verificado.
+- **Riesgo documentado**: ver adenda v1.2.0 en §Tests trazados — REQ-U6 fuera de alcance (contrato de `AppLayout`, no existe aún) y REQ-U5 sin verificación end-to-end contra una feature real todavía.
 
 ## Cambios
 
+- v1.2.0 (2026-08-03): Backend respondió `PETICION-002` — `usuarioId`/`empresaId` explícitos en `LoginTenantResponse` (REQ-U7 actualizado de "bloqueante" a "resuelto"). Implementados REQ-U2 a REQ-U9, REQ-S1/S2, REQ-E1/E2 y REQ-X1/X2 contra el contrato real: `session.store` (`empresaId` nuevo, `setTenantSession`/`setSysAdminSession`), interceptor de `apiClient.ts` (headers tenant + invalidación en 403), `usePermisos`/`tieneModuloActivo`/`tieneAccion`, guard `RequirePermission`, ruta `/no-autorizado`, y manejo de error global en `queryClient.ts` (`QueryCache.onError`). Estado pasa de `draft` a `active` — todos los REQ tienen test trazado (ver §Tests trazados). REQ-U6 permanece fuera de alcance de implementación (contrato para `AppLayout`, todavía no existe como feature).
 - v1.1.0 (2026-07-29): Backend respondió `PETICION-001` — `GET /auth/permisos` implementado y disponible (REQ-U1 actualizado de "bloqueante" a "resuelto"). Al verificar el contrato de headers de la respuesta contra `verificarToken.middleware.ts`, se encontró un gap nuevo y más amplio: el frontend no tiene forma de armar `x-usuario-id`/`x-empresa-id` en ninguna petición tenant (interceptor incompleto + `session.store` sin `empresaId` + `LoginTenantResponse` sin `usuarioId` ni `empresaId`). Se agregan REQ-U7 (bloqueante, backend — pedido en `PETICION-002`), REQ-U8 (`session.store`) y REQ-U9 (interceptor) para resolverlo dentro de esta spec, por ser el primer consumidor real de una ruta tenant con datos (mismo criterio que SPEC-004 REQ-U10).
 - v1.0.0 (2026-07-29): Versión inicial (`draft`). Documenta el modelo de autorización del backend, el contrato de datos a reutilizar, y el gap bloqueante encontrado (no existe endpoint self-service de permisos).
