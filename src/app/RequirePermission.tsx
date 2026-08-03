@@ -1,5 +1,10 @@
 import { Navigate, Outlet } from 'react-router';
-import { usePermisos, tieneModuloActivo } from '../features/auth';
+// SPEC-006 REQ-U1 (misma excepción que app/router.tsx) — import directo al archivo, no al barrel
+// `features/auth`: este guard se monta de forma eager (SPEC-008 lo usa directamente en router.tsx,
+// fuera de cualquier lazy()) y el barrel también re-exporta AuthLayout/LoginForm/RegistroForm/
+// CompletarPerfilWizard — si importara el barrel, esos componentes (hoy separados en sus propios
+// chunks async) quedarían arrastrados al chunk principal.
+import { usePermisos, tieneAccesoTotal, tieneModuloActivo } from '../features/auth/hooks/usePermisos';
 import { ROUTES } from '../constants/routes';
 import { Skeleton } from '../components/Skeleton';
 
@@ -33,7 +38,10 @@ export function RequirePermission({ modulo }: RequirePermissionProps) {
     return <PermissionCheckingSkeleton />;
   }
 
-  if (!tieneModuloActivo(data?.modulos, modulo)) {
+  // RESPUESTA-003-datos-usuario-y-logo-empresa.md — `superadmin` responde `accesoTotal: true` con
+  // `modulos: []`; sin este bypass, tieneModuloActivo siempre resolvería `false` para ese rol (fail-
+  // closed sobre un arreglo vacío) y lo mandaría a /no-autorizado pese a tener acceso total.
+  if (!tieneAccesoTotal(data) && !tieneModuloActivo(data?.modulos, modulo)) {
     // REQ-E2 — no autenticación (no /login): la sesión sigue siendo válida.
     return <Navigate to={ROUTES.NO_AUTORIZADO} replace />;
   }

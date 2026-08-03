@@ -30,8 +30,13 @@ export interface ModuloEfectivo {
 }
 
 // Respuesta de GET /auth/permisos (self-service, REQ-U1). Ref: RESPUESTA-001-permisos-self-service.md
+// `accesoTotal` (RESPUESTA-003-datos-usuario-y-logo-empresa.md) — true únicamente para `superadmin`;
+// cuando es true, `modulos` siempre viene `[]` (el backend no puebla el catálogo completo a
+// propósito, ver esa respuesta). Los consumidores deben revisar `accesoTotal` ANTES de resolver
+// cualquier módulo por `tieneModuloActivo` — ver `tieneAccesoTotal` en hooks/usePermisos.ts.
 export interface PermisosEfectivosUsuario {
   userId: string;
   role: string;
+  accesoTotal: boolean;
   modulos: ModuloEfectivo[];
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMPLETAR_PERFIL_DEFAULT_VALUES, completarPerfilSchema } from './completarPerfil.schema';
+import { COMPLETAR_PERFIL_DEFAULT_VALUES, completarPerfilSchema } from '../../../src/features/auth/schemas/completarPerfil.schema';
 
 describe('completarPerfilSchema', () => {
   // spec:SPEC-004:REQ-U8

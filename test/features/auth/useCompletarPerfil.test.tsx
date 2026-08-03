@@ -4,10 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { toast } from 'sonner';
-import { useCompletarPerfil } from './useCompletarPerfil';
-import { useSessionStore } from '../../../stores/session.store';
-import * as authService from '../services/auth.service';
-import { COMPLETAR_PERFIL_DEFAULT_VALUES, type CompletarPerfilFormValues } from '../schemas/completarPerfil.schema';
+import { useCompletarPerfil } from '../../../src/features/auth/hooks/useCompletarPerfil';
+import { useSessionStore } from '../../../src/stores/session.store';
+import * as authService from '../../../src/features/auth/services/auth.service';
+import { COMPLETAR_PERFIL_DEFAULT_VALUES, type CompletarPerfilFormValues } from '../../../src/features/auth/schemas/completarPerfil.schema';
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 

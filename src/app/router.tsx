@@ -4,8 +4,13 @@ import { ROUTES } from '../constants/routes';
 import { RouteStub } from './RouteStub';
 import { RequireAuth } from './RequireAuth';
 import { RequireOnboarding } from './RequireOnboarding';
+import { RequirePermission } from './RequirePermission';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { RouteLoadingSkeleton } from './RouteLoadingSkeleton';
+// SPEC-008 — shell compartido (sidebar/topbar/scroll de contenido) para toda ruta protegida. Import
+// eager, no lazy: se necesita para el primer render de cualquier ruta bajo RequireAuth, no hay
+// beneficio de code-splitting en diferirlo.
+import { AppLayout } from '../layouts/AppLayout';
 
 // SPEC-006 REQ-U1/U4 — import() apunta al archivo propio de cada componente, NUNCA al barrel
 // `features/auth` (aunque REQ-U3 exige que el barrel siga exportando normal). Si los 4 `lazy()`
@@ -50,10 +55,39 @@ export function AppRouter() {
             <Route path={ROUTES.COMPLETAR_PERFIL} element={<CompletarPerfilWizard />} />
           </Route>
 
-          {/* Protegidas — requieren accessToken */}
+          {/* Protegidas — requieren accessToken. SPEC-008: AppLayout envuelve todo (sidebar/topbar/
+              scroll de contenido); RequirePermission gatea cada módulo tenant individualmente
+              (SPEC-007 REQ-U4/U5) — sysadmin no pasa por esa resolución (SPEC-007 §Contexto), sus
+              rutas quedan directamente bajo AppLayout sin ese guard adicional. */}
           <Route element={<RequireAuth />}>
-            <Route path={ROUTES.DASHBOARD} element={<RouteStub title="Dashboard" />} />
-            <Route path={ROUTES.SYSADMIN} element={<RouteStub title="Panel Sysadmin" />} />
+            <Route element={<AppLayout />}>
+              <Route path={ROUTES.DASHBOARD} element={<RouteStub title="Dashboard" />} />
+
+              <Route element={<RequirePermission modulo="modulo.ventas" />}>
+                <Route path={ROUTES.VENTAS} element={<RouteStub title="Ventas" />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.cotizaciones" />}>
+                <Route path={ROUTES.COTIZACIONES} element={<RouteStub title="Cotizaciones" />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.inventario" />}>
+                <Route path={ROUTES.INVENTARIO} element={<RouteStub title="Inventario" />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.productos" />}>
+                <Route path={ROUTES.PRODUCTOS} element={<RouteStub title="Productos" />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.almacenes" />}>
+                <Route path={ROUTES.ALMACENES} element={<RouteStub title="Almacenes" />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.clientes" />}>
+                <Route path={ROUTES.CLIENTES} element={<RouteStub title="Clientes" />} />
+              </Route>
+
+              <Route path={ROUTES.SYSADMIN} element={<RouteStub title="Panel Sysadmin" />} />
+              <Route path={ROUTES.SYSADMIN_EMPRESAS} element={<RouteStub title="Empresas" />} />
+              <Route path={ROUTES.SYSADMIN_PLANES} element={<RouteStub title="Planes" />} />
+              <Route path={ROUTES.SYSADMIN_USUARIOS} element={<RouteStub title="Usuarios" />} />
+              <Route path={ROUTES.SYSADMIN_AUDITORIA} element={<RouteStub title="Auditoría" />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />

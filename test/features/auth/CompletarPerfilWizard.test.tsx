@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CompletarPerfilWizard } from './CompletarPerfilWizard';
-import * as useCompletarPerfilModule from '../hooks/useCompletarPerfil';
+import { CompletarPerfilWizard } from '../../../src/features/auth/components/CompletarPerfilWizard';
+import * as useCompletarPerfilModule from '../../../src/features/auth/hooks/useCompletarPerfil';
 
 const mutateMock = vi.fn();
 

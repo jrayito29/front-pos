@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { tieneAccion, tieneModuloActivo } from './usePermisos';
-import type { ModuloEfectivo } from '../types/permisos.types';
+import { tieneAccesoTotal, tieneAccion, tieneModuloActivo } from '../../../src/features/auth/hooks/usePermisos';
+import type { ModuloEfectivo, PermisosEfectivosUsuario } from '../../../src/features/auth/types/permisos.types';
 
 const modulos: ModuloEfectivo[] = [
   {
@@ -56,5 +56,22 @@ describe('tieneAccion — spec:SPEC-007:REQ-U3', () => {
   // spec:SPEC-007:REQ-X1/X2
   it('false cuando modulos es undefined', () => {
     expect(tieneAccion(undefined, 'ventas.crear')).toBe(false);
+  });
+});
+
+// RESPUESTA-003-datos-usuario-y-logo-empresa.md
+describe('tieneAccesoTotal', () => {
+  it('true cuando accesoTotal es true (superadmin)', () => {
+    const data: PermisosEfectivosUsuario = { userId: 'u1', role: 'superadmin', accesoTotal: true, modulos: [] };
+    expect(tieneAccesoTotal(data)).toBe(true);
+  });
+
+  it('false cuando accesoTotal es false', () => {
+    const data: PermisosEfectivosUsuario = { userId: 'u1', role: 'cajero', accesoTotal: false, modulos };
+    expect(tieneAccesoTotal(data)).toBe(false);
+  });
+
+  it('false (fail-closed) cuando data es undefined', () => {
+    expect(tieneAccesoTotal(undefined)).toBe(false);
   });
 });

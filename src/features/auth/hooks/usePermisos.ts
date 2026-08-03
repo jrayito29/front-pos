@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSessionStore } from '../../../stores/session.store';
 import { permisosQueryKey } from '../../../constants/queryKeys';
 import { getMisPermisos } from '../services/permisos.service';
-import type { ModuloEfectivo } from '../types/permisos.types';
+import type { ModuloEfectivo, PermisosEfectivosUsuario } from '../types/permisos.types';
 
 // SPEC-007 REQ-U2 — dato de servidor, vive en TanStack Query (CLAUDE.md §3), nunca en Zustand.
 // `enabled` requiere accessToken (no solo usuarioId, que también existe en la rama onboarding) —
@@ -27,4 +27,14 @@ export function tieneModuloActivo(modulos: ModuloEfectivo[] | undefined, claveMo
 
 export function tieneAccion(modulos: ModuloEfectivo[] | undefined, claveAccion: string): boolean {
   return modulos?.flatMap((m) => m.acciones).find((a) => a.clave === claveAccion)?.permitido ?? false;
+}
+
+// RESPUESTA-003-datos-usuario-y-logo-empresa.md — `accesoTotal` es true únicamente para
+// `superadmin`; cuando lo es, `modulos` siempre viene `[]` (el backend no puebla el catálogo
+// completo a propósito). Debe revisarse ANTES de resolver cualquier módulo por tieneModuloActivo —
+// si no, un superadmin vería el ítem en el menú (si el consumidor ya aplica este chequeo) pero
+// RequirePermission lo rechazaría al no encontrar el módulo en un arreglo vacío. `undefined`
+// (sin cargar o error) resuelve a `false` — mismo fail-closed que tieneModuloActivo.
+export function tieneAccesoTotal(data: PermisosEfectivosUsuario | undefined): boolean {
+  return data?.accesoTotal ?? false;
 }

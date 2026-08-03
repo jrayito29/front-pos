@@ -139,10 +139,23 @@ Arquitectura **Feature-Based (por dominio)**, no por tipo de archivo. Cada featu
 │   ├── styles/                 # Estilos globales, tailwind base
 │   ├── docs/                    # Documentación interna (SPEC-XX.md)
 │   └── main.tsx
+├── test/                        # Todos los archivos *.test.ts(x) del proyecto — nunca co-ubicados
+│   │                             # junto al archivo que prueban dentro de src/. Espeja la estructura
+│   │                             # de src/ solo hasta el nivel de dominio/feature (sin repetir el
+│   │                             # subnivel components/hooks/schemas dentro de cada feature).
+│   ├── app/
+│   ├── features/
+│   │   └── auth/                # Tests de components/hooks/schemas de la feature, sin subcarpetas
+│   ├── layouts/
+│   │   └── AppLayout/
+│   ├── services/
+│   └── stores/
 ├── .claude                      # Contexto de IA
 ├── .env
 ├── CLAUDE.md
 └── package.json
 ```
+
+**Regla de tests:** todo archivo `*.test.ts`/`*.test.tsx` va en `test/`, replicando ahí la ruta de `src/` (importando el módulo real vía ruta relativa hacia `src/`) — nunca junto al archivo fuente que prueba.
 
 Al terminar de leer este documento, confirmar que se aplicarán las skills `ui-ux-pro-max` y `emilkowalski` como criterio de diseño antes de generar cualquier componente visual.

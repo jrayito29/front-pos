@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
-import { RequireAuth } from './RequireAuth';
-import { useSessionStore } from '../stores/session.store';
-import { apiClient } from '../services/apiClient';
-import { ROUTES } from '../constants/routes';
+import { RequireAuth } from '../../src/app/RequireAuth';
+import { useSessionStore } from '../../src/stores/session.store';
+import { apiClient } from '../../src/services/apiClient';
+import { ROUTES } from '../../src/constants/routes';
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), info: vi.fn(), warning: vi.fn() } }));
 

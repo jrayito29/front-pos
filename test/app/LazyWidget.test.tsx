@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { LazyWidget } from './LazyWidget';
+import { LazyWidget } from '../../src/app/LazyWidget';
 
 function deferred<T>() {
   let resolve!: (value: T) => void;

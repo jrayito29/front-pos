@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
-import { apiClient, refreshTenantAccessToken } from './apiClient';
-import { useSessionStore } from '../stores/session.store';
-import { ROUTES } from '../constants/routes';
-import { permisosQueryKey } from '../constants/queryKeys';
-import { queryClient } from '../app/queryClient';
+import { apiClient, refreshTenantAccessToken } from '../../src/services/apiClient';
+import { useSessionStore } from '../../src/stores/session.store';
+import { ROUTES } from '../../src/constants/routes';
+import { permisosQueryKey } from '../../src/constants/queryKeys';
+import { queryClient } from '../../src/app/queryClient';
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), info: vi.fn(), warning: vi.fn() } }));
 

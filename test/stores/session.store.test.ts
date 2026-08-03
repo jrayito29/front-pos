@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { useSessionStore } from './session.store';
+import { useSessionStore } from '../../src/stores/session.store';
 
 function flushPersist() {
   // El middleware `persist` escribe a sessionStorage en un microtask tras cada `set` (ver

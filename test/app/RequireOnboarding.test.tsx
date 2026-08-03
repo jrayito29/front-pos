@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { RequireOnboarding } from './RequireOnboarding';
-import { useSessionStore } from '../stores/session.store';
-import { ROUTES } from '../constants/routes';
+import { RequireOnboarding } from '../../src/app/RequireOnboarding';
+import { useSessionStore } from '../../src/stores/session.store';
+import { ROUTES } from '../../src/constants/routes';
 
 function renderGuard() {
   return render(

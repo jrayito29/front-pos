@@ -3,9 +3,9 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
-import { useLogin } from './useLogin';
-import { useSessionStore } from '../../../stores/session.store';
-import * as authService from '../services/auth.service';
+import { useLogin } from '../../../src/features/auth/hooks/useLogin';
+import { useSessionStore } from '../../../src/stores/session.store';
+import * as authService from '../../../src/features/auth/services/auth.service';
 
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), info: vi.fn(), warning: vi.fn() } }));
 
