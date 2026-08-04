@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface ModalProps {
@@ -27,6 +28,17 @@ function prefersReducedMotion(): boolean {
 // alta consecuencia (CLAUDE.md §8 `confirmation-dialogs`) y por los modales de registro rápido
 // (categoría/subcategoría). Sin lógica de negocio propia, el contenido/acciones vienen de `children`.
 // El scrim (60% negro) aísla el contenido de fondo — regla `blur-purpose`/`scrim`.
+//
+// `createPortal` a `document.body` — no es cosmético: sin portal, este componente renderiza inline en
+// el punto del árbol donde se monta. Cuando ese punto está dentro de OTRO `<form>` (ej.
+// CategoriaQuickCreateModal disparado desde un `<select>` dentro de ProductoCrearForm), el `<form>`
+// propio de la modal queda anidado en el `<form>` externo en el DOM real — HTML inválido cuyo
+// comportamiento de submit es inconsistente entre navegadores: el evento `submit` nativo no siempre
+// llega al listener sintético de React, `preventDefault()` nunca corre, y el navegador cae a un GET
+// nativo a la URL actual con los campos serializados como query string (bug real encontrado en
+// producción: clic en "Guardar" navegaba a `/productos/nuevo?nombre=&descripcion=` sin validar). El
+// portal saca el DOM de la modal fuera del `<form>` que la contiene — visualmente no cambia nada (ya
+// se posicionaba con `fixed`), pero deja de estar anidada.
 export function Modal({ isOpen, title, onClose, children, originRef }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [entered, setEntered] = useState(false);
@@ -86,7 +98,7 @@ export function Modal({ isOpen, title, onClose, children, originRef }: ModalProp
       ? 'translate(0, 0) scale(1)'
       : `translate(${offset.dx * 0.4}px, ${offset.dy * 0.4}px) scale(0.4)`;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className="absolute inset-0 bg-black/60 transition-opacity ease-out"
@@ -110,6 +122,7 @@ export function Modal({ isOpen, title, onClose, children, originRef }: ModalProp
         </h2>
         <div className="mt-3 text-sm text-foreground-secondary">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
