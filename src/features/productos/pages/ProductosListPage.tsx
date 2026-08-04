@@ -4,7 +4,7 @@ import { DataTable, DataTableToolbar } from '../../../components/DataTable';
 import { FilterPopover } from '../../../components/FilterPopover';
 import { Button } from '../../../components/Button';
 import { EmptyState } from '../../../components/EmptyState';
-import { PlusIcon } from '../components/icons';
+import { PlusIcon } from '../../../components/icons';
 import { productosTableColumns } from '../components/productosTableColumns';
 import { ProductosFiltrosContent, type ProductosFiltrosDraft } from '../components/ProductosFiltrosContent';
 import { EliminarProductoModal } from '../components/EliminarProductoModal';
@@ -87,7 +87,7 @@ export function ProductosListPage() {
             puedeCrear && !sinProductosRegistrados ? (
               <Button size="sm" onClick={() => navigate(ROUTES.PRODUCTOS_NUEVO)}>
                 <PlusIcon className="h-4 w-4" />
-                Nuevo producto
+                Agregar
               </Button>
             ) : undefined
           }
@@ -102,7 +102,7 @@ export function ProductosListPage() {
                 puedeCrear && (
                   <Button size="sm" onClick={() => navigate(ROUTES.PRODUCTOS_NUEVO)}>
                     <PlusIcon className="h-4 w-4" />
-                    Crear producto
+                    Agregar
                   </Button>
                 )
               }
@@ -138,7 +138,7 @@ export function ProductosListPage() {
                         setPage(1);
                       }}
                     >
-                      Limpiar filtros
+                      Limpiar
                     </Button>
                   }
                 />
@@ -158,15 +158,11 @@ export function ProductosListPage() {
         </div>
       </div>
 
-      {productoAEliminar && (
-        <EliminarProductoModal
-          isOpen
-          onClose={() => setProductoAEliminar(null)}
-          productoId={productoAEliminar.id}
-          nombreCorto={productoAEliminar.nombreCorto}
-          onDeleted={() => setProductoAEliminar(null)}
-        />
-      )}
+      <EliminarProductoModal
+        producto={productoAEliminar}
+        onClose={() => setProductoAEliminar(null)}
+        onDeleted={() => setProductoAEliminar(null)}
+      />
     </div>
   );
 }

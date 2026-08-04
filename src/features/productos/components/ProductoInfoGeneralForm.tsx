@@ -8,7 +8,7 @@ import { MaskedInput } from '../../../components/MaskedInput';
 import { Button } from '../../../components/Button';
 import { CategoriaSelect } from './CategoriaSelect';
 import { SubcategoriaSelect } from './SubcategoriaSelect';
-import { SaveIcon } from './icons';
+import { SaveIcon } from '../../../components/icons';
 import { actualizarProductoSchema, type ActualizarProductoInput, type ActualizarProductoOutput } from '../schemas/actualizarProducto.schema';
 import { useActualizarProducto } from '../hooks/useActualizarProducto';
 import { applyProductoApiError } from '../hooks/applyProductoApiError';
@@ -143,7 +143,7 @@ export function ProductoInfoGeneralForm({ producto, onSaved }: ProductoInfoGener
           />
         </div>
       )}
-      <div className="flex justify-end gap-3 border-t border-border pt-4">
+      <div className="flex justify-end gap-3 pt-2">
         <Button type="submit" size="sm" isLoading={actualizarProducto.isPending} loadingText="Guardando...">
           <SaveIcon className="h-4 w-4" />
           Guardar

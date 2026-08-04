@@ -30,6 +30,15 @@ Por cada componente base, esta spec debe registrar:
 - Cualquier cambio a un componente ya documentado (nueva variante, nuevo estado, cambio de comportamiento) requiere actualizar primero esta spec y obtener aprobación, antes de tocar el código del componente.
 - Los specs de feature que consuman un componente deben citar la sección correspondiente de SPEC-00 (ej. "usa `Button` variante `primary`, ver SPEC-00 §Button") en lugar de describir el componente de nuevo.
 
+## Contenido y copy de botones
+
+Regla transversal — aplica a **todo** botón de acción del sistema, no solo a la API mecánica de `Button` (documentada abajo). Agregada tras un hallazgo real de revisión visual sobre el módulo de Productos: mezcla de botones con/sin ícono sin criterio, y labels como "Crear categoría"/"Guardar producto"/"Cancelar edición" en vez de un verbo solo.
+
+1. **Ícono + label en toda acción primaria** — la acción principal de una vista/formulario (crear, guardar, agregar) SIEMPRE lleva un ícono junto al texto. La misma familia de acción usa el **mismo** ícono en todo el sistema: `+` (`components/icons/PlusIcon`) para toda alta/creación, el disco de guardar (`components/icons/SaveIcon`) para todo "Guardar". Nunca un ícono distinto para la misma acción en dos vistas.
+2. **Sin ícono en acciones secundarias/dismissive** — "Cancelar", "Volver", "Limpiar" y equivalentes NUNCA llevan ícono. El texto ya es inequívoco por sí solo; un ícono ahí no aporta reconocimiento y le resta jerarquía visual a la acción primaria de la vista, que es la que debe destacar. Esto no es una omisión — es la regla.
+3. **Verbo en infinitivo, nunca verbo + objeto** — el label de cualquier botón es un verbo solo ("Guardar", "Eliminar", "Cancelar", "Agregar", "Editar", "Aplicar"), nunca una frase que repita el objeto sobre el que actúa. Mal: "Guardar producto", "Crear categoría", "Cancelar edición", "Limpiar filtros". Bien: "Guardar", "Guardar" (mismo verbo en el form de Productos y en el de Categorías — el objeto ya es obvio por el formulario en el que vive el botón), "Cancelar", "Limpiar". El contexto de la vista/formulario ya comunica el objeto; repetirlo en el botón es ruido, no claridad.
+4. Icónos nuevos (fuera de `PlusIcon`/`SaveIcon`) se agregan a `components/icons/` siguiendo el mismo trazo que `layouts/AppLayout/icons.tsx` (`viewBox 24x24`, `stroke 1.75–2`, extremos redondeados) — nunca inline por componente, para que la regla de "mismo ícono, misma acción" sea trivial de cumplir.
+
 ## Componentes
 
 ### Logo
@@ -61,7 +70,7 @@ Por cada componente base, esta spec debe registrar:
 ### Button
 
 1. **Nombre y ubicación**: `Button` en `src/components/Button/`.
-2. **Propósito**: acción primaria/secundaria dentro de formularios y vistas. No usar para navegación entre rutas (usar componente de link).
+2. **Propósito**: acción primaria/secundaria dentro de formularios y vistas. No usar para navegación entre rutas (usar componente de link). El *contenido* (ícono + verbo en infinitivo) sigue la regla de §Contenido y copy de botones — no es una decisión libre por feature.
 3. **Variantes**: `primary`, `secondary`, `ghost`, `danger`.
 4. **Estados**: default, hover, active/pressed, focus, disabled, loading.
 5. **Tamaños**: `sm`, `md`, `lg`.
@@ -69,7 +78,7 @@ Por cada componente base, esta spec debe registrar:
 7. **Props públicas**: `variant`, `size`, `isLoading?: boolean`, `loadingText?: string`, `disabled?: boolean`, `type: 'button' | 'submit'`, `fullWidth?: boolean`.
 8. **Accesibilidad**: `aria-busy` sincronizado con `isLoading`; `aria-disabled` sincronizado con `disabled` real; el spinner no roba foco; focus ring visible 2–4px.
 9. **Ejemplo de uso**: `<Button variant="primary" fullWidth type="submit" isLoading={isPending} loadingText="Iniciando sesión...">Iniciar sesión</Button>`
-10. **Historial de cambios**: v1.0.0 (2026-07-23) — creado para SPEC-002.
+10. **Historial de cambios**: v1.0.0 (2026-07-23) — creado para SPEC-002. v1.1.0 (2026-08-04) — se agrega §Contenido y copy de botones (ícono+label en acciones primarias, verbo en infinitivo sin objeto) tras hallazgo de revisión visual en Productos/Categorías (SPEC-009).
 
 ### Skeleton
 
@@ -90,5 +99,5 @@ Por cada componente base, esta spec debe registrar:
 | ---------- | ------ | --------------------- |
 | Logo       | draft  | 2026-07-23             |
 | Input      | draft  | 2026-07-23             |
-| Button     | draft  | 2026-07-23             |
+| Button     | draft  | 2026-08-04             |
 | Skeleton   | draft  | 2026-07-29             |

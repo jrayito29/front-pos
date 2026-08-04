@@ -22,3 +22,8 @@ export const productoQueryKey = (id: string | undefined) => ['productos', 'detal
 // SPEC-009 — GET /api/v1/productos/:id/historial-precios (tab Costos y precio, REQ-U30).
 export const historialPreciosQueryKey = (id: string | undefined, periodo: string) =>
   ['productos', 'historial-precios', id, periodo] as const;
+
+// SPEC-009 (v1.4.0) — GET /api/v1/categorias/selector (api-pos SPEC-020), consumido por
+// CategoriaSelect/SubcategoriaSelect y por cualquier otro módulo que asigne categorías. `params`
+// completo en el key para que cada combinación (soloRaiz/padreId/q) tenga su propia entrada de caché.
+export const categoriasSelectorQueryKey = (params: object) => ['categorias', 'selector', params] as const;

@@ -50,7 +50,7 @@ export function ProductoDetallePage() {
         description="Puede que el producto no exista o haya sido eliminado."
         action={
           <Button size="sm" onClick={() => navigate(ROUTES.PRODUCTOS)}>
-            Volver al listado
+            Volver
           </Button>
         }
       />
@@ -80,10 +80,8 @@ export function ProductoDetallePage() {
       </div>
 
       <EliminarProductoModal
-        isOpen={isDeleteModalOpen}
+        producto={isDeleteModalOpen ? producto : null}
         onClose={() => setIsDeleteModalOpen(false)}
-        productoId={producto.id}
-        nombreCorto={producto.nombreCorto}
         onDeleted={() => navigate(ROUTES.PRODUCTOS)}
       />
     </div>

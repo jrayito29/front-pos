@@ -53,7 +53,7 @@ export function FilterPopover({ activeCount, onApply, onClear, children }: Filte
           className="absolute right-0 top-full z-20 mt-2 w-80 rounded-lg border border-border bg-background p-4 shadow-sm"
         >
           <div className="flex flex-col gap-4">{children}</div>
-          <div className="mt-4 flex justify-end gap-2 border-t border-border pt-4">
+          <div className="mt-4 flex justify-end gap-2">
             <Button
               type="button"
               variant="ghost"

@@ -41,7 +41,7 @@ export function ProductoDetalleHeader({ producto, isEditing, onToggleEdit, onDel
         {puedeEditar && (
           <>
             <Button variant="secondary" size="sm" onClick={onToggleEdit}>
-              {isEditing ? 'Cancelar edición' : 'Editar'}
+              {isEditing ? 'Cancelar' : 'Editar'}
             </Button>
             <Button variant="danger" size="sm" onClick={onDeleteClick}>
               Eliminar

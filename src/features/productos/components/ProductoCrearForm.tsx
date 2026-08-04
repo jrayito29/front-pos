@@ -11,7 +11,7 @@ import { TIPO_PRODUCTO } from '../constants/producto.constants';
 import { ProductoIdentificacionFields } from './ProductoIdentificacionFields';
 import { ProductoClasificacionFields } from './ProductoClasificacionFields';
 import { ProductoCostosFields } from './ProductoCostosFields';
-import { SaveIcon } from './icons';
+import { SaveIcon } from '../../../components/icons';
 
 // SPEC-009 REQ-U19 — formulario de creación completo (identificación, clasificación, costos y
 // precio), organizado en secciones delimitadas por línea. Card sobre `bg-background` (blanco/
@@ -54,7 +54,7 @@ export function ProductoCrearForm() {
         <ProductoClasificacionFields tipo={tipo} />
         <ProductoCostosFields tipo={tipo} />
 
-        <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
+        <div className="flex items-center justify-between gap-4 pt-2">
           <p className="text-xs text-foreground-muted">
             <span className="text-brand-coral-text">*</span> Campos requeridos
           </p>

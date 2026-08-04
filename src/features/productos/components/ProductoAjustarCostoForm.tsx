@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { MaskedInput } from '../../../components/MaskedInput';
 import { Button } from '../../../components/Button';
-import { SaveIcon } from './icons';
+import { SaveIcon } from '../../../components/icons';
 import { ajustarCostoSchema, type AjustarCostoInput, type AjustarCostoOutput } from '../schemas/ajustarCosto.schema';
 import { useAjustarCosto } from '../hooks/useAjustarCosto';
 import { applyProductoApiError } from '../hooks/applyProductoApiError';
@@ -129,7 +129,7 @@ export function ProductoAjustarCostoForm({ producto }: { producto: ProductoDTO }
       <div className="flex justify-end">
         <Button type="submit" size="sm" isLoading={ajustarCosto.isPending} loadingText="Guardando...">
           <SaveIcon className="h-4 w-4" />
-          Guardar ajuste
+          Guardar
         </Button>
       </div>
     </form>

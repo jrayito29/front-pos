@@ -89,50 +89,8 @@ export function tagNombrePorSlug(slug: string): string {
   return TAGS_CATALOGO.find((tag) => tag.slug === slug)?.nombre ?? slug;
 }
 
-// SPEC-009 REQ-U20/U46 — mock estático hasta que exista el módulo real de Categorías en el backend
-// (SPEC-016 §TODOs Pendientes: categoriaId/subcategoriaId se guardan sin FK todavía). El backend SÍ
-// valida el *formato* UUID de `categoriaId`/`subcategoriaId` (aunque no la FK, ver DESIGN de
-// SPEC-016) — estos IDs deben tener forma UUID v4 real, nunca un slug legible, o el `POST`/`PATCH`
-// fallaría 400 pese a que la categoría en sí es solo una etiqueta mock. `parentId: null` = categoría
-// padre (la única que muestra el selector "Categoría"); `parentId: <uuid>` = subcategoría (hija de
-// esa categoría padre, la única que muestra el selector "Subcategoría").
-export const CATEGORIAS_MOCK = [
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000001', nombre: 'Abarrotes', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000002', nombre: 'Bebidas', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000003', nombre: 'Limpieza', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000004', nombre: 'Ropa y calzado', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000005', nombre: 'Electrónica', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000006', nombre: 'Servicios', parentId: null },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000007', nombre: 'Otros', parentId: null },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000101', nombre: 'Enlatados', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000001' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000102', nombre: 'Snacks', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000001' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000103', nombre: 'Cereales', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000001' },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000201', nombre: 'Refrescos', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000002' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000202', nombre: 'Jugos', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000002' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000203', nombre: 'Agua embotellada', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000002' },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000301', nombre: 'Detergentes', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000003' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000302', nombre: 'Desinfectantes', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000003' },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000401', nombre: 'Playeras', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000004' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000402', nombre: 'Pantalones', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000004' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000403', nombre: 'Calzado', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000004' },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000501', nombre: 'Celulares', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000005' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000502', nombre: 'Audio', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000005' },
-
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000601', nombre: 'Instalación', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000006' },
-  { id: '3f1a1b2c-4d5e-4f60-8a11-000000000602', nombre: 'Reparación', parentId: '3f1a1b2c-4d5e-4f60-8a11-000000000006' },
-] as const;
-
-export const CATEGORIAS_PADRE_MOCK = CATEGORIAS_MOCK.filter((c) => c.parentId === null);
-
-export function getSubcategoriasDe(categoriaId: string | undefined): typeof CATEGORIAS_MOCK[number][] {
-  if (!categoriaId) return [];
-  return CATEGORIAS_MOCK.filter((c) => c.parentId === categoriaId);
-}
+// SPEC-009 (v1.4.0) — el mock de categorías se retiró: api-pos implementó el módulo real
+// (SPEC-020, `GET /categorias/selector`). Ver features/categorias/.
 
 // SPEC-016 §Códigos de Error — subconjunto usado por el mapeo de errores del front (REQ-E14/E15/E16).
 export const PRODUCTO_ERRORS = {

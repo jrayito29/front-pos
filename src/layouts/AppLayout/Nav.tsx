@@ -64,7 +64,11 @@ export function Nav({ items, ariaLabel, loading = false }: NavProps) {
     >
       {items.map((item) => {
         const Icon = item.icon;
-        const active = location.pathname === item.to;
+        // SPEC-008 REQ-U14 (adenda) — match por prefijo, no solo igualdad exacta: un módulo con
+        // subrutas (ej. Productos: /productos/nuevo, /productos/:id) debe seguir marcado como activo
+        // en el sidebar mientras se navega dentro de él. El `/` final evita que `/productos` matchee
+        // por accidente algo como `/productos-x`.
+        const active = item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(`${item.to}/`) || location.pathname === item.to;
         return (
           <MenuItem key={item.key} icon={<Icon className="h-5 w-5" />} active={active} component={<Link to={item.to} />}>
             {item.label}
