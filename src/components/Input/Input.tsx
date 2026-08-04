@@ -4,11 +4,13 @@ import { EyeIcon, EyeOffIcon } from './PasswordIcons';
 interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label: string;
   error?: string;
+  required?: boolean;
 }
 
-// SPEC-001 §Input
+// SPEC-001 §Input — `required` solo agrega el asterisco visual (regla `required-indicators`,
+// ui-ux-pro-max); la validación real vive en el schema Zod, este prop es puramente informativo.
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, type = 'text', id, className = '', ...props }, ref) => {
+  ({ label, error, required = false, type = 'text', id, className = '', ...props }, ref) => {
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const errorId = `${inputId}-error`;
@@ -19,6 +21,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="flex flex-col gap-1.5">
         <label htmlFor={inputId} className="text-sm font-medium text-foreground">
           {label}
+          {required && <span className="text-brand-coral-text"> *</span>}
         </label>
         <div className="relative">
           <input
@@ -27,9 +30,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             type={isPassword && isVisible ? 'text' : type}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
-            className={`h-11 w-full rounded-lg border bg-background px-3.5 text-base text-foreground transition-colors duration-150 placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-green/40 disabled:cursor-not-allowed disabled:opacity-50 ${
-              error ? 'border-brand-coral' : 'border-border focus:border-brand-green'
-            } ${isPassword ? 'pr-11' : ''} ${className}`}
+            className={`h-9 w-full rounded-lg border bg-background px-3.5 text-base text-foreground transition-colors duration-150 placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-green/40 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-brand-coral' : 'border-border focus:border-brand-green'
+              } ${isPassword ? 'pr-11' : ''} ${className}`}
             {...props}
           />
           {isPassword && (

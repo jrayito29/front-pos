@@ -19,6 +19,10 @@ export const ROUTES = {
   COTIZACIONES: '/cotizaciones',
   INVENTARIO: '/inventario',
   PRODUCTOS: '/productos',
+  // SPEC-009 — ruta propia para el formulario en blanco (REQ-U19); el patrón `:id` se usa tal cual
+  // en `<Route path=...>` (app/router.tsx) y `productoDetalleRoute()` (abajo) construye el href real.
+  PRODUCTOS_NUEVO: '/productos/nuevo',
+  PRODUCTOS_DETALLE: '/productos/:id',
   ALMACENES: '/almacenes',
   CLIENTES: '/clientes',
   SYSADMIN: '/admin',
@@ -32,3 +36,8 @@ export const ROUTES = {
   // No es /login: la sesión sigue siendo válida, es un problema de autorización, no de autenticación.
   NO_AUTORIZADO: '/no-autorizado',
 } as const;
+
+// SPEC-009 — primera ruta dinámica del proyecto (sin precedente previo): `ROUTES.PRODUCTOS_DETALLE`
+// es el patrón `:id` que consume `<Route path=...>`; esta función construye el href real para
+// `navigate()`/`<Link>`. Vive fuera de `ROUTES` porque no es un valor estático.
+export const productoDetalleRoute = (id: string): string => `/productos/${id}`;

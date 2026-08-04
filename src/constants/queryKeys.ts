@@ -10,3 +10,15 @@ export const permisosQueryKey = (usuarioId: string | null) => ['permisos', usuar
 // de la sesión activa. Query independiente de `permisosQueryKey`: son dos endpoints distintos con
 // guards de rol que a futuro pueden divergir (ver esa respuesta, §Puntos 1 y 2).
 export const perfilQueryKey = (usuarioId: string | null) => ['perfil', usuarioId] as const;
+
+// SPEC-009 — GET /api/v1/productos (listado paginado/filtrado). `filtros` entra completo en el key
+// para que cada combinación de filtros/página tenga su propia entrada de caché (TanStack Query
+// serializa el objeto de forma estable).
+export const productosQueryKey = (filtros: object) => ['productos', filtros] as const;
+
+// SPEC-009 — GET /api/v1/productos/:id (detalle, consumido por Ver/Editar).
+export const productoQueryKey = (id: string | undefined) => ['productos', 'detalle', id] as const;
+
+// SPEC-009 — GET /api/v1/productos/:id/historial-precios (tab Costos y precio, REQ-U30).
+export const historialPreciosQueryKey = (id: string | undefined, periodo: string) =>
+  ['productos', 'historial-precios', id, periodo] as const;

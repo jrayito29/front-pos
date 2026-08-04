@@ -32,6 +32,18 @@ const CompletarPerfilWizard = lazy(() =>
   import('../features/auth/components/CompletarPerfilWizard').then((m) => ({ default: m.CompletarPerfilWizard }))
 );
 
+// SPEC-009 — mismo criterio (SPEC-006 REQ-U1/U4): import() al archivo propio de cada página, no al
+// barrel `features/productos` (colapsaría las 3 rutas en un solo chunk async).
+const ProductosListPage = lazy(() =>
+  import('../features/productos/pages/ProductosListPage').then((m) => ({ default: m.ProductosListPage }))
+);
+const ProductoCrearPage = lazy(() =>
+  import('../features/productos/pages/ProductoCrearPage').then((m) => ({ default: m.ProductoCrearPage }))
+);
+const ProductoDetallePage = lazy(() =>
+  import('../features/productos/pages/ProductoDetallePage').then((m) => ({ default: m.ProductoDetallePage }))
+);
+
 export function AppRouter() {
   return (
     <RouteErrorBoundary>
@@ -73,7 +85,9 @@ export function AppRouter() {
                 <Route path={ROUTES.INVENTARIO} element={<RouteStub title="Inventario" />} />
               </Route>
               <Route element={<RequirePermission modulo="modulo.productos" />}>
-                <Route path={ROUTES.PRODUCTOS} element={<RouteStub title="Productos" />} />
+                <Route path={ROUTES.PRODUCTOS} element={<ProductosListPage />} />
+                <Route path={ROUTES.PRODUCTOS_NUEVO} element={<ProductoCrearPage />} />
+                <Route path={ROUTES.PRODUCTOS_DETALLE} element={<ProductoDetallePage />} />
               </Route>
               <Route element={<RequirePermission modulo="modulo.almacenes" />}>
                 <Route path={ROUTES.ALMACENES} element={<RouteStub title="Almacenes" />} />
