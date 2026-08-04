@@ -33,6 +33,21 @@ export interface RefreshOnboardingResponse {
   perfilCompleto: false;
 }
 
+// SPEC-005 REQ-E3 — misma respuesta que emite POST /refresh cuando la sesión vigente es tenant.
+// usuarioId/empresaId requeridos (no opcionales), mismo criterio que LoginTenantResponse (REQ-U7).
+// Ref: RESPUESTA-004-usuarioid-empresaid-en-refresh-tenant.md
+export interface RefreshTenantResponse {
+  accessToken: string;
+  usuarioId: string;
+  empresaId: string;
+}
+
+// SPEC-005 REQ-E4 — rama explícita cuando la sesión vigente es sysadmin. Nunca trae
+// usuarioId/empresaId: es el discriminador entre esta rama y RefreshTenantResponse (REQ-U6).
+export interface RefreshSysAdminResponse {
+  accessToken: string;
+}
+
 // SPEC-004 REQ-E4 — resuelve POST /auth/completar-perfil; transición de sesión parcial a completa.
 export interface PerfilCompletoResponse {
   accessToken: string;

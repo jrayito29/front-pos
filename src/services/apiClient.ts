@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useSessionStore } from '../stores/session.store';
 import { ROUTES } from '../constants/routes';
 import { permisosQueryKey } from '../constants/queryKeys';
+import type { RefreshTenantResponse, RefreshSysAdminResponse } from '../features/auth/types/auth.types';
 // SPEC-007 REQ-E1 — se importa el singleton de app/ (no al revés) únicamente para invalidar la
 // query de permisos ante un 403 de autorización; no hay import en sentido contrario en runtime
 // (app/queryClient.ts solo importa el tipo `ApiError` de este archivo, borrado en compilación).
@@ -25,10 +26,16 @@ interface RefreshOnboardingApiResponse {
   data: { onboardingToken: string; usuarioId: string; perfilCompleto: false };
 }
 
-// SPEC-005 REQ-U2 — respuesta de POST /auth/refresh cuando la sesión vigente es de tenant.
+// SPEC-005 REQ-E3 — respuesta de POST /auth/refresh cuando la sesión vigente es de tenant.
 interface RefreshTenantApiResponse {
   success: true;
-  data: { accessToken: string };
+  data: RefreshTenantResponse;
+}
+
+// SPEC-005 REQ-E4 — respuesta de POST /auth/refresh cuando la sesión vigente es de sysadmin.
+interface RefreshSysAdminApiResponse {
+  success: true;
+  data: RefreshSysAdminResponse;
 }
 
 interface RetriableConfig extends InternalAxiosRequestConfig {
@@ -47,19 +54,26 @@ const PERMISSION_DENIED_ERROR_CODE = 'ERR_PERMISSION_DENIED';
 
 let pendingTenantRefresh: Promise<string> | null = null;
 
-// SPEC-005 REQ-U5/E1/E2/X3 — obtiene un accessToken nuevo vía POST /auth/refresh y lo persiste en
-// session.store (setAccessToken, nunca setTenantSession — no debe resetear mustChangePassword/
-// requiereSeleccionSucursal ni onboardingToken/usuarioId, que RefreshTenantResponse no trae).
+// SPEC-005 REQ-U5/E1/E2/E3/E4/X3 — obtiene un accessToken nuevo vía POST /auth/refresh y lo
+// persiste en session.store (setAccessToken, nunca setTenantSession — no debe resetear
+// mustChangePassword/requiereSeleccionSucursal ni onboardingToken). REQ-U6: discrimina la rama de
+// la respuesta por presencia de usuarioId (mismo criterio que useLogin para LoginResponse) — rama
+// tenant repuebla usuarioId/empresaId (REQ-E3), rama sysadmin los deja sin tocar (REQ-E4).
 // Deduplicado (REQ-X3): si ya hay un refresh en curso (disparado por el bootstrap de RequireAuth o
 // por el interceptor de abajo), las llamadas concurrentes reutilizan la misma promesa en vez de
 // disparar POST /auth/refresh por duplicado.
 export function refreshTenantAccessToken(refreshToken: string): Promise<string> {
   if (!pendingTenantRefresh) {
     pendingTenantRefresh = apiClient
-      .post<RefreshTenantApiResponse>('/auth/refresh', { refreshToken })
+      .post<RefreshTenantApiResponse | RefreshSysAdminApiResponse>('/auth/refresh', { refreshToken })
       .then(({ data }) => {
         const { accessToken } = data.data;
-        useSessionStore.getState().setAccessToken(accessToken);
+        if ('usuarioId' in data.data) {
+          const { usuarioId, empresaId } = data.data;
+          useSessionStore.getState().setAccessToken({ accessToken, usuarioId, empresaId });
+        } else {
+          useSessionStore.getState().setAccessToken({ accessToken });
+        }
         return accessToken;
       })
       .finally(() => {

@@ -32,11 +32,12 @@ interface SessionActions {
   // no volver usuarioId/empresaId opcionales ahí, contradiciendo REQ-U8.
   setSysAdminSession: (payload: { accessToken: string; refreshToken: string }) => void;
   setOnboardingSession: (tokens: { onboardingToken: string; refreshToken: string; usuarioId: string }) => void;
-  // SPEC-005 REQ-U3 — actualiza únicamente accessToken (resultado de un refresh silencioso o de un
-  // reintento de interceptor). A diferencia de setTenantSession, NO resetea onboardingToken/usuarioId/
-  // empresaId ni las banderas mustChangePassword/requiereSeleccionSucursal — RefreshTenantResponse no
-  // las trae.
-  setAccessToken: (accessToken: string) => void;
+  // SPEC-005 REQ-U3/E3/E4 — aplica el resultado de un refresh silencioso o de un reintento de
+  // interceptor. Siempre actualiza accessToken; usuarioId/empresaId solo se actualizan cuando la
+  // respuesta los trae (rama tenant, REQ-E3) — en la rama sysadmin (REQ-E4) se omiten y quedan como
+  // estaban (null, ver setSysAdminSession). A diferencia de setTenantSession, NO resetea
+  // onboardingToken ni las banderas mustChangePassword/requiereSeleccionSucursal.
+  setAccessToken: (payload: { accessToken: string; usuarioId?: string; empresaId?: string }) => void;
   resolveMustChangePassword: () => void;
   resolveRequiereSeleccionSucursal: () => void;
   clearSession: () => void;
@@ -109,7 +110,12 @@ export const useSessionStore = create<SessionStore>()(
           mustChangePassword: false,
           requiereSeleccionSucursal: false,
         }),
-      setAccessToken: (accessToken) => set({ accessToken }),
+      setAccessToken: ({ accessToken, usuarioId, empresaId }) =>
+        set((state) => ({
+          accessToken,
+          usuarioId: usuarioId ?? state.usuarioId,
+          empresaId: empresaId ?? state.empresaId,
+        })),
       resolveMustChangePassword: () => set({ mustChangePassword: false }),
       resolveRequiereSeleccionSucursal: () => set({ requiereSeleccionSucursal: false }),
       clearSession: () => set(initialState),

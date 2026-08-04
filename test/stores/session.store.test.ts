@@ -55,7 +55,7 @@ describe('session.store — REQ-U11 (SPEC-004) / REQ-U1 (adenda SPEC-005)', () =
 
 describe('session.store — REQ-U3 (SPEC-005)', () => {
   // spec:SPEC-005:REQ-U3
-  it('setAccessToken actualiza únicamente accessToken, sin resetear el resto del estado de sesión', () => {
+  it('setAccessToken sin usuarioId/empresaId actualiza únicamente accessToken, sin resetear el resto del estado de sesión', () => {
     useSessionStore.getState().setTenantSession({
       accessToken: 'access-old',
       refreshToken: 'refresh-1',
@@ -65,13 +65,41 @@ describe('session.store — REQ-U3 (SPEC-005)', () => {
       requiereSeleccionSucursal: true,
     });
 
-    useSessionStore.getState().setAccessToken('access-new');
+    useSessionStore.getState().setAccessToken({ accessToken: 'access-new' });
 
     const state = useSessionStore.getState();
     expect(state.accessToken).toBe('access-new');
     expect(state.refreshToken).toBe('refresh-1');
+    expect(state.usuarioId).toBe('usuario-1');
+    expect(state.empresaId).toBe('empresa-1');
     expect(state.mustChangePassword).toBe(true);
     expect(state.requiereSeleccionSucursal).toBe(true);
+  });
+
+  // spec:SPEC-005:REQ-E3
+  it('setAccessToken actualiza usuarioId/empresaId cuando la respuesta de refresh los trae (rama tenant)', () => {
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-old', refreshToken: 'refresh-1', usuarioId: 'usuario-1', empresaId: 'empresa-1' });
+
+    useSessionStore.getState().setAccessToken({ accessToken: 'access-new', usuarioId: 'usuario-2', empresaId: 'empresa-2' });
+
+    const state = useSessionStore.getState();
+    expect(state.accessToken).toBe('access-new');
+    expect(state.usuarioId).toBe('usuario-2');
+    expect(state.empresaId).toBe('empresa-2');
+  });
+
+  // spec:SPEC-005:REQ-E4
+  it('setAccessToken no repuebla usuarioId/empresaId cuando la respuesta de refresh no los trae (rama sysadmin)', () => {
+    useSessionStore.getState().setSysAdminSession({ accessToken: 'access-old-sysadmin', refreshToken: 'refresh-1' });
+
+    useSessionStore.getState().setAccessToken({ accessToken: 'access-new-sysadmin' });
+
+    const state = useSessionStore.getState();
+    expect(state.accessToken).toBe('access-new-sysadmin');
+    expect(state.usuarioId).toBeNull();
+    expect(state.empresaId).toBeNull();
   });
 });
 

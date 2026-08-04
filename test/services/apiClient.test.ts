@@ -166,8 +166,8 @@ describe('apiClient', () => {
     expect(assignMock).toHaveBeenCalledWith(ROUTES.LOGIN);
   });
 
-  // spec:SPEC-005:REQ-U2 / REQ-E2
-  it('ante ERR_TOKEN_EXPIRED con accessToken activo, refresca la sesión de tenant y reintenta la petición original una vez', async () => {
+  // spec:SPEC-005:REQ-U2 / REQ-E2 / REQ-E3
+  it('ante ERR_TOKEN_EXPIRED con accessToken activo, refresca la sesión de tenant (repoblando usuarioId/empresaId) y reintenta la petición original una vez', async () => {
     useSessionStore
       .getState()
       .setTenantSession({ accessToken: 'old-access', refreshToken: 'refresh-1', usuarioId: 'usuario-1', empresaId: 'empresa-1' });
@@ -175,7 +175,10 @@ describe('apiClient', () => {
     let originalAttempts = 0;
     apiClient.defaults.adapter = (async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/auth/refresh') {
-        return okResponse({ success: true, data: { accessToken: 'new-access' } }, config);
+        return okResponse(
+          { success: true, data: { accessToken: 'new-access', usuarioId: 'usuario-1', empresaId: 'empresa-1' } },
+          config
+        );
       }
       originalAttempts += 1;
       if (originalAttempts === 1) {
@@ -189,8 +192,35 @@ describe('apiClient', () => {
     expect(originalAttempts).toBe(2);
     expect(response.data).toEqual({ success: true, data: { ok: true } });
     expect(useSessionStore.getState().accessToken).toBe('new-access');
+    expect(useSessionStore.getState().usuarioId).toBe('usuario-1');
+    expect(useSessionStore.getState().empresaId).toBe('empresa-1');
     // setAccessToken (REQ-U3) no debe tocar refreshToken
     expect(useSessionStore.getState().refreshToken).toBe('refresh-1');
+  });
+
+  // spec:SPEC-005:REQ-U6 / REQ-E4
+  it('ante ERR_TOKEN_EXPIRED con una sesión sysadmin, refresca únicamente accessToken sin repoblar usuarioId/empresaId', async () => {
+    useSessionStore.getState().setSysAdminSession({ accessToken: 'old-access-sysadmin', refreshToken: 'refresh-1' });
+
+    let originalAttempts = 0;
+    apiClient.defaults.adapter = (async (config: InternalAxiosRequestConfig) => {
+      if (config.url === '/auth/refresh') {
+        return okResponse({ success: true, data: { accessToken: 'new-access-sysadmin' } }, config);
+      }
+      originalAttempts += 1;
+      if (originalAttempts === 1) {
+        throw tokenError(config, 'ERR_TOKEN_EXPIRED');
+      }
+      return okResponse({ success: true, data: { ok: true } }, config);
+    }) as AxiosAdapter;
+
+    const response = await apiClient.get('/admin/algo');
+
+    expect(originalAttempts).toBe(2);
+    expect(response.data).toEqual({ success: true, data: { ok: true } });
+    expect(useSessionStore.getState().accessToken).toBe('new-access-sysadmin');
+    expect(useSessionStore.getState().usuarioId).toBeNull();
+    expect(useSessionStore.getState().empresaId).toBeNull();
   });
 
   // spec:SPEC-005:REQ-X2
@@ -223,7 +253,10 @@ describe('apiClient', () => {
     apiClient.defaults.adapter = (async (config: InternalAxiosRequestConfig) => {
       if (config.url === '/auth/refresh') {
         refreshCalls += 1;
-        return okResponse({ success: true, data: { accessToken: 'new-access' } }, config);
+        return okResponse(
+          { success: true, data: { accessToken: 'new-access', usuarioId: 'usuario-1', empresaId: 'empresa-1' } },
+          config
+        );
       }
       return okResponse({ success: true, data: {} }, config);
     }) as AxiosAdapter;
@@ -236,6 +269,8 @@ describe('apiClient', () => {
     expect(refreshCalls).toBe(1);
     expect(first).toBe('new-access');
     expect(second).toBe('new-access');
+    expect(useSessionStore.getState().usuarioId).toBe('usuario-1');
+    expect(useSessionStore.getState().empresaId).toBe('empresa-1');
   });
 
   // spec:SPEC-004:REQ-X3
