@@ -66,6 +66,13 @@ export function Nav({ items, ariaLabel, loading = false }: NavProps) {
           minWidth: 'auto',
           marginRight: '12px',
         }),
+        // react-pro-sidebar aplica `background-color: white` fijo al contenedor de un SubMenu
+        // expandido (StyledSubMenuContent) — sin esta key queda blanco fijo sin importar el tema. Debe
+        // matchear el fondo de la sidebar (Sidebar.tsx, `backgroundColor="var(--bg-secondary)"`), no
+        // el de la página, para que no se note costura entre el ítem padre y sus hijos.
+        subMenuContent: {
+          backgroundColor: 'var(--bg-secondary)',
+        },
       }}
     >
       {items.map((entry) => {
