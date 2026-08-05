@@ -1,8 +1,8 @@
 import { toast } from 'sonner';
 import { TagChip } from './TagChip';
-import { usePermisos } from '../../auth/hooks/usePermisos';
+import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
 import { useDesasignarTag } from '../hooks/useAsignarTags';
-import { PRODUCTO_ROLES_ESCRITURA } from '../constants/producto.constants';
+import { PRODUCTO_ACCION } from '../constants/producto.constants';
 import type { ProductoDTO } from '../types/producto.types';
 
 // SPEC-009 §Contexto punto 6 — "quitar" es funcional (usa el `id` real que ya trae el producto
@@ -11,8 +11,7 @@ import type { ProductoDTO } from '../types/producto.types';
 // el front) — nunca se inventa un ID, eso produciría 404 `ERR_TAG_NOT_FOUND` garantizado.
 export function ProductoTagsTab({ producto }: { producto: ProductoDTO }) {
   const { data } = usePermisos();
-  const role = data?.role;
-  const puedeEditar = Boolean(role && (PRODUCTO_ROLES_ESCRITURA as readonly string[]).includes(role));
+  const puedeEditar = puedeAccion(data, PRODUCTO_ACCION.GESTIONAR_TAGS);
   const desasignarTag = useDesasignarTag();
 
   function handleQuitar(tagId: string) {

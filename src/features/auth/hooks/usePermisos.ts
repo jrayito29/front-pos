@@ -38,3 +38,11 @@ export function tieneAccion(modulos: ModuloEfectivo[] | undefined, claveAccion: 
 export function tieneAccesoTotal(data: PermisosEfectivosUsuario | undefined): boolean {
   return data?.accesoTotal ?? false;
 }
+
+// Composición de los tres checks anteriores — cualquier feature que gatee una acción específica del
+// catálogo dinámico (SPEC-003) DEBE pasar por este helper, nunca solo por `tieneAccion`: sin el
+// bypass de `tieneAccesoTotal`, `superadmin` (que siempre trae `modulos: []`) se resolvería como
+// `false` para cualquier acción — mismo riesgo que `tieneModuloActivo` documenta en su propio caso.
+export function puedeAccion(data: PermisosEfectivosUsuario | undefined, claveAccion: string): boolean {
+  return tieneAccesoTotal(data) || tieneAccion(data?.modulos, claveAccion);
+}

@@ -115,7 +115,20 @@ export const PRODUCTO_ERROR_CODE_TO_FIELD: Record<string, string> = {
   [PRODUCTO_ERRORS.CODIGO_BARRAS_DUPLICADO]: 'codigoBarras',
 };
 
-// Roles de escritura/historial — mismo criterio que `producto.routes.ts` (rolesEscritura/rolesHistorial)
-// en el backend. SPEC-009 REQ-U24/S6/S7/X5.
-export const PRODUCTO_ROLES_ESCRITURA = ['superadmin', 'admin'] as const;
-export const PRODUCTO_ROLES_HISTORIAL = ['superadmin', 'admin', 'cajero'] as const;
+// RESPUESTA-006-cambio-permisos-productos.md (2026-08-04) — Productos migró de roles estáticos
+// (`verificarRoles`) al catálogo dinámico de permisos (SPEC-003, `verificarPermiso`). Claves reales
+// de las 9 acciones del módulo, formato "<modulo>.<accion>" (SPEC-007 §Contexto) — mismo criterio
+// que `producto.routes.ts` en el backend. Se consultan siempre vía `puedeAccion(data, clave)`
+// (features/auth), nunca comparando `data.role` contra un array hardcodeado (ver SPEC-009 §Riesgo
+// documentado v1.4.0, resuelto por esta migración).
+export const PRODUCTO_ACCION = {
+  VER: 'producto.ver',
+  VER_SELECTOR: 'producto.ver_selector',
+  CREAR: 'producto.crear',
+  EDITAR: 'producto.editar',
+  CAMBIAR_ESTADO: 'producto.cambiar_estado',
+  AJUSTAR_COSTO: 'producto.ajustar_costo',
+  ELIMINAR: 'producto.eliminar',
+  GESTIONAR_TAGS: 'producto.gestionar_tags',
+  VER_HISTORIAL: 'producto.ver_historial',
+} as const;

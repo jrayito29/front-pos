@@ -1,8 +1,8 @@
 import { LazyWidget } from '../../../app/LazyWidget';
 import { ProductoAjustarCostoForm } from './ProductoAjustarCostoForm';
-import { usePermisos } from '../../auth/hooks/usePermisos';
+import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
 import { formatCurrency } from '../../../lib/formatCurrency';
-import { PRODUCTO_ROLES_ESCRITURA, PRODUCTO_ROLES_HISTORIAL } from '../constants/producto.constants';
+import { PRODUCTO_ACCION } from '../constants/producto.constants';
 import type { ProductoDTO } from '../types/producto.types';
 
 function CostoField({ label, value }: { label: string; value: string }) {
@@ -14,15 +14,13 @@ function CostoField({ label, value }: { label: string; value: string }) {
   );
 }
 
-// SPEC-009 REQ-U28/S6/S7 — el formulario de ajuste y el historial se gatean por rol de forma
-// independiente (rolesEscritura vs rolesHistorial del backend, producto.routes.ts): un rol de solo
-// historial (cajero) ve historial pero no el formulario de ajuste; un rol sin ninguno de los dos ve
-// solo los valores actuales en modo lectura.
+// SPEC-009 REQ-U28/S6/S7 — el formulario de ajuste y el historial se gatean por acciones
+// independientes del catálogo dinámico (`producto.ajustar_costo` / `producto.ver_historial`,
+// RESPUESTA-006): un rol sin ninguna de las dos ve solo los valores actuales en modo lectura.
 export function ProductoCostosPrecioTab({ producto }: { producto: ProductoDTO }) {
   const { data } = usePermisos();
-  const role = data?.role;
-  const puedeAjustar = Boolean(role && (PRODUCTO_ROLES_ESCRITURA as readonly string[]).includes(role));
-  const puedeVerHistorial = Boolean(role && (PRODUCTO_ROLES_HISTORIAL as readonly string[]).includes(role));
+  const puedeAjustar = puedeAccion(data, PRODUCTO_ACCION.AJUSTAR_COSTO);
+  const puedeVerHistorial = puedeAccion(data, PRODUCTO_ACCION.VER_HISTORIAL);
 
   return (
     <div className="flex flex-col gap-4">

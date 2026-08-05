@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, Navigate } from 'react-router';
 import { Skeleton } from '../../../components/Skeleton';
 import { Button } from '../../../components/Button';
 import { EmptyState } from '../../../components/EmptyState';
@@ -10,9 +10,9 @@ import { ProductoCostosPrecioTab } from '../components/ProductoCostosPrecioTab';
 import { ProductoTagsTab } from '../components/ProductoTagsTab';
 import { EliminarProductoModal } from '../components/EliminarProductoModal';
 import { useProducto } from '../hooks/useProducto';
-import { usePermisos } from '../../auth/hooks/usePermisos';
+import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
 import { ROUTES } from '../../../constants/routes';
-import { PRODUCTO_ROLES_ESCRITURA } from '../constants/producto.constants';
+import { PRODUCTO_ACCION } from '../constants/producto.constants';
 
 const TABS: TabItem[] = [
   { key: 'info', label: 'Información general' },
@@ -24,13 +24,33 @@ const TABS: TabItem[] = [
 export function ProductoDetallePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: producto, isLoading, isError } = useProducto(id);
-  const { data: permisos } = usePermisos();
+  const { data: permisos, isLoading: isLoadingPermisos } = usePermisos();
+
+  const puedeVer = puedeAccion(permisos, PRODUCTO_ACCION.VER);
+  const puedeEditar = puedeAccion(permisos, PRODUCTO_ACCION.EDITAR);
+  const puedeEliminar = puedeAccion(permisos, PRODUCTO_ACCION.ELIMINAR);
+  const puedeCambiarEstado = puedeAccion(permisos, PRODUCTO_ACCION.CAMBIAR_ESTADO);
+
+  const { data: producto, isLoading, isError } = useProducto(id, { enabled: !isLoadingPermisos && puedeVer });
   const [activeTab, setActiveTab] = useState('info');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const puedeEditar = Boolean(permisos?.role && (PRODUCTO_ROLES_ESCRITURA as readonly string[]).includes(permisos.role));
+  // REQ-S1 — skeleton mientras se resuelve el permiso, nunca redirigir antes de tener el dato real.
+  if (isLoadingPermisos) {
+    return (
+      <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label="Verificando permisos">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  // RESPUESTA-006-cambio-permisos-productos.md — mismo criterio que ProductosListPage: rol sin
+  // `producto.ver` no debe llegar al detalle aunque conozca el `id` por URL.
+  if (!puedeVer) {
+    return <Navigate to={ROUTES.NO_AUTORIZADO} replace />;
+  }
 
   // REQ-S1 — skeleton mientras carga, nunca spinner genérico.
   if (isLoading) {
@@ -66,6 +86,8 @@ export function ProductoDetallePage() {
           onToggleEdit={() => setIsEditing((v) => !v)}
           onDeleteClick={() => setIsDeleteModalOpen(true)}
           puedeEditar={puedeEditar}
+          puedeEliminar={puedeEliminar}
+          puedeCambiarEstado={puedeCambiarEstado}
         />
 
         <Tabs tabs={TABS} activeKey={activeTab} onChange={setActiveTab} />

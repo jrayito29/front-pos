@@ -1,25 +1,32 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useRef, useState } from 'react';
+import { Navigate, useNavigate } from 'react-router';
 import { DataTable, DataTableToolbar } from '../../../components/DataTable';
 import { FilterPopover } from '../../../components/FilterPopover';
 import { Button } from '../../../components/Button';
 import { EmptyState } from '../../../components/EmptyState';
+import { LockedActionButton } from '../../../components/LockedActionButton';
+import { SolicitarAccesoModal } from '../../../components/SolicitarAccesoModal';
 import { PlusIcon } from '../../../components/icons';
+import { Skeleton } from '../../../components/Skeleton';
 import { productosTableColumns } from '../components/productosTableColumns';
 import { ProductosFiltrosContent, type ProductosFiltrosDraft } from '../components/ProductosFiltrosContent';
 import { EliminarProductoModal } from '../components/EliminarProductoModal';
 import { useProductos } from '../hooks/useProductos';
 import { useDebounce } from '../../../hooks/useDebounce';
-import { usePermisos } from '../../auth/hooks/usePermisos';
+import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
 import { productoDetalleRoute, ROUTES } from '../../../constants/routes';
-import { PRODUCTO_ROLES_ESCRITURA } from '../constants/producto.constants';
+import { PRODUCTO_ACCION } from '../constants/producto.constants';
 import type { ProductoResumenDTO } from '../types/producto.types';
 
 // SPEC-009 REQ-U13 a U18 — listado con DataTable genérico, toolbar de filtros y paginación server-side.
 export function ProductosListPage() {
   const navigate = useNavigate();
-  const { data: permisos } = usePermisos();
-  const puedeCrear = Boolean(permisos?.role && (PRODUCTO_ROLES_ESCRITURA as readonly string[]).includes(permisos.role));
+  const { data: permisos, isLoading: isLoadingPermisos } = usePermisos();
+  const agregarBtnRef = useRef<HTMLButtonElement>(null);
+
+  const puedeVer = puedeAccion(permisos, PRODUCTO_ACCION.VER);
+  const puedeCrear = puedeAccion(permisos, PRODUCTO_ACCION.CREAR);
+  const puedeEliminar = puedeAccion(permisos, PRODUCTO_ACCION.ELIMINAR);
 
   const [q, setQ] = useState('');
   const debouncedQ = useDebounce(q, 400);
@@ -28,16 +35,33 @@ export function ProductosListPage() {
   const [appliedFiltros, setAppliedFiltros] = useState<ProductosFiltrosDraft>({});
   const [draftFiltros, setDraftFiltros] = useState<ProductosFiltrosDraft>({});
   const [productoAEliminar, setProductoAEliminar] = useState<ProductoResumenDTO | null>(null);
+  const [solicitudAccion, setSolicitudAccion] = useState<string | null>(null);
 
   const filtrosActivos = Object.values(appliedFiltros).filter((v) => v !== undefined && v !== '').length;
   const hayBusquedaOFiltros = Boolean(debouncedQ) || filtrosActivos > 0;
 
-  const { data, isLoading, isError, refetch } = useProductos({
-    q: debouncedQ || undefined,
-    page,
-    limit,
-    ...appliedFiltros,
-  });
+  const { data, isLoading, isError, refetch } = useProductos(
+    { q: debouncedQ || undefined, page, limit, ...appliedFiltros },
+    { enabled: !isLoadingPermisos && puedeVer }
+  );
+
+  // REQ-S1 — skeleton mientras se resuelve el permiso, nunca redirigir antes de tener el dato real
+  // (fail-closed pero sin falso negativo por carrera de carga).
+  if (isLoadingPermisos) {
+    return (
+      <div className="flex flex-col gap-4" role="status" aria-busy="true" aria-label="Verificando permisos">
+        <Skeleton className="h-10 w-full max-w-xs" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  // RESPUESTA-006-cambio-permisos-productos.md — rol sin `producto.ver` (hoy: `cajero`): no debe
+  // llegar al listado aunque el módulo esté activo para el tenant, mismo criterio de REQ-X5 que ya
+  // aplica `ProductoCrearPage` para escritura.
+  if (!puedeVer) {
+    return <Navigate to={ROUTES.NO_AUTORIZADO} replace />;
+  }
 
   // REQ-X1 — error de red/servidor: no se renderiza DataTable, bloque de error con "Reintentar".
   if (isError) {
@@ -84,12 +108,18 @@ export function ProductosListPage() {
             </FilterPopover>
           }
           primaryAction={
-            puedeCrear && !sinProductosRegistrados ? (
-              <Button size="sm" onClick={() => navigate(ROUTES.PRODUCTOS_NUEVO)}>
+            sinProductosRegistrados ? undefined : puedeCrear ? (
+              <Button ref={agregarBtnRef} size="sm" onClick={() => navigate(ROUTES.PRODUCTOS_NUEVO)}>
                 <PlusIcon className="h-4 w-4" />
                 Agregar
               </Button>
-            ) : undefined
+            ) : (
+              <LockedActionButton
+                ref={agregarBtnRef}
+                reason="No tienes permiso para agregar productos. Solicita acceso a un administrador."
+                onRequestAccess={() => setSolicitudAccion('agregar productos')}
+              />
+            )
           }
         />
 
@@ -99,11 +129,16 @@ export function ProductosListPage() {
               title="Aún no has registrado productos"
               description="Crea tu primer producto para empezar a construir tu catálogo."
               action={
-                puedeCrear && (
+                puedeCrear ? (
                   <Button size="sm" onClick={() => navigate(ROUTES.PRODUCTOS_NUEVO)}>
                     <PlusIcon className="h-4 w-4" />
                     Agregar
                   </Button>
+                ) : (
+                  <LockedActionButton
+                    reason="No tienes permiso para agregar productos. Solicita acceso a un administrador."
+                    onRequestAccess={() => setSolicitudAccion('agregar productos')}
+                  />
                 )
               }
             />
@@ -114,14 +149,17 @@ export function ProductosListPage() {
               keyField="id"
               isLoading={isLoading}
               onRowClick={(row) => navigate(productoDetalleRoute(row.id))}
-              rowActions={
-                puedeCrear
-                  ? (row) => (
-                      <Button variant="ghost" size="sm" onClick={() => setProductoAEliminar(row)}>
-                        Eliminar
-                      </Button>
-                    )
-                  : undefined
+              rowActions={(row) =>
+                puedeEliminar ? (
+                  <Button variant="ghost" size="sm" onClick={() => setProductoAEliminar(row)}>
+                    Eliminar
+                  </Button>
+                ) : (
+                  <LockedActionButton
+                    reason="No tienes permiso para eliminar productos. Solicita acceso a un administrador."
+                    onRequestAccess={() => setSolicitudAccion('eliminar productos')}
+                  />
+                )
               }
               // REQ-X3 — sin resultados con filtros/búsqueda activos: CTA distinto ("Limpiar filtros").
               emptyState={
@@ -162,6 +200,13 @@ export function ProductosListPage() {
         producto={productoAEliminar}
         onClose={() => setProductoAEliminar(null)}
         onDeleted={() => setProductoAEliminar(null)}
+      />
+
+      <SolicitarAccesoModal
+        isOpen={solicitudAccion !== null}
+        accion={solicitudAccion ?? ''}
+        onClose={() => setSolicitudAccion(null)}
+        originRef={agregarBtnRef}
       />
     </div>
   );

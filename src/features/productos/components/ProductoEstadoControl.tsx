@@ -10,12 +10,12 @@ import { ESTADO_PRODUCTO, TRANSICIONES_ESTADO, type EstadoProductoDomain } from 
 interface ProductoEstadoControlProps {
   productoId: string;
   estado: EstadoProductoDomain;
-  puedeEditar: boolean;
+  puedeCambiarEstado: boolean;
 }
 
 // SPEC-009 REQ-S4/E9/E10 — transiciones limitadas a la matriz del backend; solo la transición hacia
 // DISCONTINUADO pasa por confirmación (no puede revertirse directo a ACTIVO, mayor consecuencia).
-export function ProductoEstadoControl({ productoId, estado, puedeEditar }: ProductoEstadoControlProps) {
+export function ProductoEstadoControl({ productoId, estado, puedeCambiarEstado }: ProductoEstadoControlProps) {
   const [pendiente, setPendiente] = useState<EstadoProductoDomain | null>(null);
   const cambiarEstado = useCambiarEstadoProducto();
 
@@ -39,7 +39,7 @@ export function ProductoEstadoControl({ productoId, estado, puedeEditar }: Produ
     aplicar(nuevoEstado);
   }
 
-  if (!puedeEditar) return <EstadoBadge estado={estado} />;
+  if (!puedeCambiarEstado) return <EstadoBadge estado={estado} />;
 
   const opciones = [estado, ...TRANSICIONES_ESTADO[estado]].map((value) => ({ value, label: value }));
 
