@@ -115,4 +115,17 @@ describe('AppRouter — rutas protegidas dentro de AppLayout (SPEC-008)', () => 
     // getByText por defecto solo compara nodos de texto directos, así que se matchea el <span>.
     expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
   });
+
+  // spec:SPEC-010:REQ-X3 — mismo criterio que /ventas, gate independiente de modulo.productos/inventario
+  it('/categorias redirige a /no-autorizado cuando el módulo no está activo para el usuario', async () => {
+    vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = permisosYPerfilAdapter();
+
+    renderAt(ROUTES.CATEGORIAS);
+
+    expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
+  });
 });

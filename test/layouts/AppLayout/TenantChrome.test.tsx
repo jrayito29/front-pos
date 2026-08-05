@@ -10,7 +10,15 @@ import { ROUTES } from '../../../src/constants/routes';
 import type { ModuloEfectivo, PermisosEfectivosUsuario } from '../../../src/features/auth/types/permisos.types';
 import type { PerfilUsuarioResponse } from '../../../src/features/auth/types/perfil.types';
 
-const TODAS_LAS_CLAVES = ['modulo.ventas', 'modulo.cotizaciones', 'modulo.inventario', 'modulo.productos', 'modulo.almacenes', 'modulo.clientes'];
+const TODAS_LAS_CLAVES = [
+  'modulo.ventas',
+  'modulo.cotizaciones',
+  'modulo.inventario',
+  'modulo.productos',
+  'modulo.almacenes',
+  'modulo.clientes',
+  'modulo.categorias',
+];
 
 function permisosFixture(activos: string[], accesoTotal = false): PermisosEfectivosUsuario {
   // RESPUESTA-003 — cuando accesoTotal es true, el backend siempre responde `modulos: []`.
@@ -112,6 +120,36 @@ describe('TenantChrome', () => {
     expect(screen.getByRole('link', { name: 'Productos' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Almacenes' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Clientes' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Categorías' })).toBeInTheDocument();
+  });
+
+  // spec:SPEC-010:REQ-U8 — el grupo "Configuración" se resuelve con el mismo criterio de permiso
+  // que cualquier ítem plano, sobre su único sub-ítem hoy (Categorías).
+  it('muestra el grupo "Configuración" con "Categorías" cuando el módulo está activo para el usuario', async () => {
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = adapterFor(permisosFixture(['modulo.categorias']));
+
+    renderTenantChrome();
+
+    expect(await screen.findByRole('link', { name: 'Categorías' })).toBeInTheDocument();
+    expect(screen.getByText('Configuración')).toBeInTheDocument();
+  });
+
+  // spec:SPEC-010:REQ-U8 — un grupo sin ningún sub-ítem visible se oculta por completo (hoy
+  // "Configuración" solo agrupa Categorías, así que perder ese permiso oculta el grupo entero).
+  it('oculta el grupo "Configuración" por completo cuando ningún sub-ítem es visible para el usuario', async () => {
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = adapterFor(permisosFixture(['modulo.ventas']));
+
+    renderTenantChrome();
+
+    expect(await screen.findByRole('link', { name: 'Ventas' })).toBeInTheDocument();
+    expect(screen.queryByText('Configuración')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Categorías' })).not.toBeInTheDocument();
   });
 
   // spec:SPEC-008:REQ-X2 (fail-closed)
