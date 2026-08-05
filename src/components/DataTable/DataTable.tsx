@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import RDTDataTable, { type TableColumn } from 'react-data-table-component';
 import { dataTableStyles } from './tableStyles';
 import { TableRowsSkeleton } from './TableRowsSkeleton';
+import { useUiStore } from '../../stores/ui.store';
 
 export interface DataTablePaginationProps {
   page: number;
@@ -36,6 +37,13 @@ export function DataTable<T>({
   rowActions,
   pagination,
 }: DataTableProps<T>) {
+  // https://reactdatatable.com/docs/themes/ — sin `colorMode` explícito, la librería intenta
+  // autodetectar tema por su cuenta (localStorage.theme / html.dark / prefers-color-scheme), ninguna
+  // de las cuales usa este proyecto (data-theme + ui-preferences, ver stores/ui.store.ts) — sin este
+  // prop la librería nunca se entera de que la app está en modo oscuro, sin importar las variables
+  // --rdt-* mapeadas en brand.css.
+  const theme = useUiStore((state) => state.theme);
+
   // REQ-U6 — columna de acciones opcional, `ignoreRowClick` evita que dispare la navegación de fila
   // (REQ-U18) sin necesitar `stopPropagation` manual: es soporte nativo de la librería para esto.
   // `width: '76px'` — pensada para un botón icon-only `size="sm"` (~44px) más el padding de celda de
@@ -60,6 +68,7 @@ export function DataTable<T>({
       data={data}
       keyField={keyField}
       customStyles={dataTableStyles}
+      colorMode={theme}
       responsive
       highlightOnHover
       pointerOnHover={Boolean(onRowClick)}
