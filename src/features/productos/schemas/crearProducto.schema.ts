@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { TIPO_PRODUCTO } from '../constants/producto.constants';
-import { decimalPositivoSchema, margenPorcentajeSchema, descuentoPorcentajeSchema, unidadMedidaSchema } from './shared.schema';
+import { decimalPositivoSchema, margenPorcentajeSchema, descuentoPorcentajeSchema, unidadMedidaIdSchema } from './shared.schema';
 
 // Réplica de crearProductoSchema (api-pos/src/validators/producto.validator.ts, SPEC-016). REQ-U19.
 export const crearProductoSchema = z
@@ -12,7 +12,7 @@ export const crearProductoSchema = z
     tipo: z.enum([TIPO_PRODUCTO.FISICO, TIPO_PRODUCTO.SERVICIO]),
     categoriaId: z.string().uuid('Selecciona una categoría válida').optional(),
     subcategoriaId: z.string().uuid().optional(),
-    unidadMedida: unidadMedidaSchema.optional(),
+    unidadMedidaId: unidadMedidaIdSchema.optional(),
     requiereBascula: z.boolean().default(false).optional(),
     costoEstimado: decimalPositivoSchema.default('0.00'),
     stockMinimo: z.number().int().min(0).optional(),
@@ -29,13 +29,11 @@ export const crearProductoSchema = z
       ctx.addIssue({ code: 'custom', path: ['categoriaId'], message: 'La categoría es requerida.' });
     }
     // REQ-U22 — la UI ya oculta estos campos cuando tipo=SERVICIO; esta regla se mantiene como
-    // defensa en profundidad (mismo criterio que el backend, SPEC-016 REQ-X4/X11).
+    // defensa en profundidad (mismo criterio que el backend, SPEC-016 REQ-X4/X11). `unidadMedidaId`
+    // retirado de esta lista en v1.6.0 — ya no es exclusivo de FISICO (RESPUESTA-007).
     if (data.tipo === TIPO_PRODUCTO.SERVICIO) {
       if (data.stockMinimo !== undefined) {
         ctx.addIssue({ code: 'custom', path: ['stockMinimo'], message: 'stockMinimo solo aplica a productos tipo FISICO.' });
-      }
-      if (data.unidadMedida !== undefined) {
-        ctx.addIssue({ code: 'custom', path: ['unidadMedida'], message: 'unidadMedida solo aplica a productos tipo FISICO.' });
       }
       if (data.codigoBarras !== undefined) {
         ctx.addIssue({ code: 'custom', path: ['codigoBarras'], message: 'codigoBarras solo aplica a productos tipo FISICO.' });

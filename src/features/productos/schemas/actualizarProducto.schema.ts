@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decimalPositivoSchema, margenPorcentajeSchema, descuentoPorcentajeSchema, unidadMedidaSchema } from './shared.schema';
+import { decimalPositivoSchema, margenPorcentajeSchema, descuentoPorcentajeSchema, unidadMedidaIdSchema } from './shared.schema';
 
 // Réplica de actualizarProductoSchema (SPEC-016) — `tipo` es inmutable, se omite (REQ-U34). Los
 // campos exclusivos de FISICO se ocultan en la UI cuando tipo=SERVICIO (REQ-S5), así que este schema
@@ -12,7 +12,7 @@ export const actualizarProductoSchema = z.object({
   nombreLargo: z.string().min(1, 'El nombre largo es requerido').max(255).optional(),
   categoriaId: z.string().uuid('Selecciona una categoría válida').optional(),
   subcategoriaId: z.string().uuid().optional(),
-  unidadMedida: unidadMedidaSchema.optional(),
+  unidadMedidaId: unidadMedidaIdSchema.optional(),
   requiereBascula: z.boolean().optional(),
   costoEstimado: decimalPositivoSchema.optional(),
   stockMinimo: z.number().int().min(0).optional(),

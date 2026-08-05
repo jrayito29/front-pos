@@ -31,23 +31,10 @@ export const FUENTE_PRECIO = {
 } as const;
 export type FuentePrecioDomain = (typeof FUENTE_PRECIO)[keyof typeof FUENTE_PRECIO];
 
-// SPEC-016 §Constantes — la respuesta de la API devuelve el objeto hidratado { label, key }.
-export const UNIDADES_MEDIDA = [
-  { label: 'Pieza', key: 'pza' },
-  { label: 'Par', key: 'par' },
-  { label: 'Docena', key: 'doc' },
-  { label: 'Caja', key: 'caj' },
-  { label: 'Paquete', key: 'paq' },
-  { label: 'Kilogramo', key: 'kg' },
-  { label: 'Gramo', key: 'gr' },
-  { label: 'Litro', key: 'lt' },
-  { label: 'Mililitro', key: 'ml' },
-  { label: 'Metro', key: 'mt' },
-  { label: 'Centímetro', key: 'cm' },
-  { label: 'Hora', key: 'hr' },
-  { label: 'Día', key: 'dia' },
-] as const;
-export const UNIDADES_MEDIDA_KEYS = UNIDADES_MEDIDA.map((u) => u.key);
+// RESPUESTA-007-migracion-unidad-medida-fk.md (SPEC-016 v1.6.0) — la constante estática
+// `UNIDADES_MEDIDA`/`UNIDADES_MEDIDA_KEYS` se retira: `unidadMedidaId` ahora es una FK real al
+// catálogo `UnidadMedida` (SPEC-021), expuesto en `GET /api/v1/unidades-medida`. Ver
+// features/unidades-medida y features/productos/components/UnidadMedidaSelect.tsx.
 
 // SPEC-016 REQ-S1/S2 — matriz de transiciones permitidas, usada por el control de Estado (REQ-S4).
 export const TRANSICIONES_ESTADO: Record<EstadoProductoDomain, EstadoProductoDomain[]> = {
@@ -97,7 +84,9 @@ export const PRODUCTO_ERRORS = {
   NOT_FOUND: 'ERR_PRODUCTO_NOT_FOUND',
   SKU_DUPLICADO: 'ERR_PRODUCTO_SKU_DUPLICADO',
   CODIGO_BARRAS_DUPLICADO: 'ERR_PRODUCTO_CODIGO_BARRAS_DUPLICADO',
-  UNIDAD_INVALIDA: 'ERR_PRODUCTO_UNIDAD_INVALIDA',
+  // v1.6.0 — reemplaza a UNIDAD_INVALIDA (RESPUESTA-007-migracion-unidad-medida-fk.md).
+  UNIDAD_NOT_FOUND: 'ERR_PRODUCTO_UNIDAD_NOT_FOUND',
+  UNIDAD_TIPO_INCOMPATIBLE: 'ERR_PRODUCTO_UNIDAD_TIPO_INCOMPATIBLE',
   ESTADO_TRANSICION_INVALIDA: 'ERR_PRODUCTO_ESTADO_TRANSICION_INVALIDA',
   PRECIO_REQUERIDO: 'ERR_PRODUCTO_PRECIO_REQUERIDO',
   SKU_REQUERIDO: 'ERR_PRODUCTO_SKU_REQUERIDO',
@@ -113,6 +102,8 @@ export const PRODUCTO_ERRORS = {
 export const PRODUCTO_ERROR_CODE_TO_FIELD: Record<string, string> = {
   [PRODUCTO_ERRORS.SKU_DUPLICADO]: 'sku',
   [PRODUCTO_ERRORS.CODIGO_BARRAS_DUPLICADO]: 'codigoBarras',
+  [PRODUCTO_ERRORS.UNIDAD_NOT_FOUND]: 'unidadMedidaId',
+  [PRODUCTO_ERRORS.UNIDAD_TIPO_INCOMPATIBLE]: 'unidadMedidaId',
 };
 
 // RESPUESTA-006-cambio-permisos-productos.md (2026-08-04) — Productos migró de roles estáticos

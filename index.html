@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>alpha-pos</title>
+    <script>
+      // SPEC-008 REQ-E6 — evita el flash de tema claro en cada carga: Shell.tsx aplica `data-theme`
+      // en un useEffect (post-mount), así que sin este script el primer paint siempre usa las
+      // variables de :root (light) hasta que React monta. Lee la misma clave que persistea
+      // stores/ui.store.ts (zustand persist, name: "ui-preferences") antes de que el CSS pinte nada.
+      (function () {
+        try {
+          var stored = localStorage.getItem('ui-preferences');
+          var theme = stored ? JSON.parse(stored).state.theme : null;
+          if (theme !== 'light' && theme !== 'dark') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

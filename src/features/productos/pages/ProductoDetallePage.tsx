@@ -11,6 +11,7 @@ import { ProductoTagsTab } from '../components/ProductoTagsTab';
 import { EliminarProductoModal } from '../components/EliminarProductoModal';
 import { useProducto } from '../hooks/useProducto';
 import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
+import { useBreadcrumbExtra } from '../../../hooks/useBreadcrumbExtra';
 import { ROUTES } from '../../../constants/routes';
 import { PRODUCTO_ACCION } from '../constants/producto.constants';
 
@@ -35,6 +36,8 @@ export function ProductoDetallePage() {
   const [activeTab, setActiveTab] = useState('info');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  useBreadcrumbExtra(producto?.nombreCorto);
 
   // REQ-S1 — skeleton mientras se resuelve el permiso, nunca redirigir antes de tener el dato real.
   if (isLoadingPermisos) {
@@ -94,7 +97,12 @@ export function ProductoDetallePage() {
 
         <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`} className="pt-4">
           {activeTab === 'info' && (
-            <ProductoInfoGeneralTab producto={producto} isEditing={isEditing} onSaved={() => setIsEditing(false)} />
+            <ProductoInfoGeneralTab
+              producto={producto}
+              isEditing={isEditing}
+              onSaved={() => setIsEditing(false)}
+              onCancel={() => setIsEditing(false)}
+            />
           )}
           {activeTab === 'costos' && <ProductoCostosPrecioTab producto={producto} />}
           {activeTab === 'tags' && <ProductoTagsTab producto={producto} />}

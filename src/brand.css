@@ -75,4 +75,38 @@
   --brand-purple-text: #afa9ec;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --rdt-color-scheme: dark;
+}
+
+/*
+  react-data-table-component v8.8 — desde esa versión la librería dejó de leer
+  `customStyles.rows.highlightOnHoverStyle` (verificado contra dist/index.js: el string no existe en
+  el bundle ejecutable, solo sobrevive en los .d.ts desactualizados) y en su lugar inyecta su propio
+  <style> con reglas basadas en variables `--rdt-*` (ej. `.rdt_rowHighlight:hover{background-color:
+  var(--rdt-color-highlight,#eee)!important}`). Sin este mapeo, el hover de fila y el fondo del
+  contenedor de carga (`.rdt_progress`) siempre caen al fallback claro de la librería, sin importar
+  el tema activo. Bloque sin gatear por [data-theme]: las variables de la derecha ya resuelven el
+  valor correcto por tema (arriba), var() las resuelve en tiempo de uso.
+*/
+:root {
+  --rdt-color-bg: var(--bg-primary);
+  --rdt-color-header-bg: var(--bg-secondary);
+  --rdt-color-footer-bg: var(--bg-primary);
+  --rdt-color-text-primary: var(--text-primary);
+  --rdt-color-text-secondary: var(--text-secondary);
+  --rdt-color-divider: var(--border);
+  --rdt-color-highlight: var(--bg-secondary);
+  --rdt-color-highlight-text: var(--text-primary);
+  --rdt-color-selected: var(--bg-tertiary);
+  --rdt-color-selected-text: var(--text-primary);
+  --rdt-color-primary: var(--brand-green);
+  --rdt-color-btn: var(--text-secondary);
+  --rdt-color-btn-hover: var(--bg-tertiary);
+  --rdt-color-btn-disabled: var(--text-muted);
+  --rdt-color-btn-focus: var(--bg-tertiary);
+}
+
+:root,
+[data-theme="light"] {
+  --rdt-color-scheme: light;
 }

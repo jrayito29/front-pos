@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { UNIDADES_MEDIDA_KEYS } from '../constants/producto.constants';
 
 // Réplica byte-a-byte de api-pos/src/validators/producto.validator.ts (SPEC-016 §DESIGN) — campos
 // monetarios/porcentuales viajan como string para preservar precisión decimal; el backend nunca
@@ -25,6 +24,7 @@ export const descuentoPorcentajeSchema = z
     message: 'El descuento debe estar entre 0 y 100.',
   });
 
-export const unidadMedidaSchema = z.enum(UNIDADES_MEDIDA_KEYS as [string, ...string[]], {
-  message: 'Selecciona una unidad de medida válida.',
-});
+// RESPUESTA-007-migracion-unidad-medida-fk.md (SPEC-016 v1.6.0) — `unidadMedida` (string enum) →
+// `unidadMedidaId` (FK real a `UnidadMedida.id`, SPEC-021). Existencia y compatibilidad de `tipo` se
+// validan en el backend (requiere consulta a BD, REQ-E13); aquí solo se valida la forma (uuid).
+export const unidadMedidaIdSchema = z.string().uuid('Selecciona una unidad de medida válida.');

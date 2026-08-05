@@ -38,6 +38,9 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   // REQ-U6 — columna de acciones opcional, `ignoreRowClick` evita que dispare la navegación de fila
   // (REQ-U18) sin necesitar `stopPropagation` manual: es soporte nativo de la librería para esto.
+  // `width: '76px'` — pensada para un botón icon-only `size="sm"` (~44px) más el padding de celda de
+  // `cells.style` (16px por lado, tableStyles.ts): un botón con texto (ej. "Eliminar") se desborda de
+  // esta columna, por diseño — mantener las acciones de fila siempre icon-only con `aria-label`/`Tooltip`.
   const resolvedColumns: TableColumn<T>[] = rowActions
     ? [
         ...columns,
@@ -45,7 +48,7 @@ export function DataTable<T>({
           name: '',
           cell: (row) => rowActions(row),
           ignoreRowClick: true,
-          width: '56px',
+          width: '76px',
           right: true,
         },
       ]

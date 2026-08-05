@@ -18,12 +18,8 @@ export function ProductoInfoGeneralReadOnly({ producto }: { producto: ProductoDT
       {producto.tipo === TIPO_PRODUCTO.FISICO && <Field label="Código de barras" value={producto.codigoBarras ?? ''} />}
       <Field label="Nombre corto" value={producto.nombreCorto} />
       <Field label="Nombre largo" value={producto.nombreLargo} />
-      {producto.tipo === TIPO_PRODUCTO.FISICO && (
-        <>
-          <Field label="Unidad de medida" value={producto.unidadMedida?.label ?? ''} />
-          <Field label="Requiere báscula" value={producto.requiereBascula ? 'Sí' : 'No'} />
-        </>
-      )}
+      <Field label="Unidad de medida" value={producto.unidadMedida?.nombre ?? ''} />
+      {producto.tipo === TIPO_PRODUCTO.FISICO && <Field label="Requiere báscula" value={producto.requiereBascula ? 'Sí' : 'No'} />}
     </div>
   );
 }

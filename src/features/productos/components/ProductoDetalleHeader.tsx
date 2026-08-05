@@ -1,11 +1,9 @@
-import { useNavigate } from 'react-router';
 import { useRef, useState } from 'react';
 import { Button } from '../../../components/Button';
 import { LockedActionButton } from '../../../components/LockedActionButton';
 import { SolicitarAccesoModal } from '../../../components/SolicitarAccesoModal';
 import { TipoIcon } from './TipoIcon';
 import { ProductoEstadoControl } from './ProductoEstadoControl';
-import { ROUTES } from '../../../constants/routes';
 import { tipoLabel } from '../constants/producto.constants';
 import type { ProductoDTO } from '../types/producto.types';
 
@@ -32,25 +30,22 @@ export function ProductoDetalleHeader({
   puedeEliminar,
   puedeCambiarEstado,
 }: ProductoDetalleHeaderProps) {
-  const navigate = useNavigate();
   const editarBtnRef = useRef<HTMLButtonElement>(null);
   const eliminarBtnRef = useRef<HTMLButtonElement>(null);
   const [solicitud, setSolicitud] = useState<{ accion: string; origen: 'editar' | 'eliminar' } | null>(null);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate(ROUTES.PRODUCTOS)}>
-          ‹ Volver
-        </Button>
-        <div className="flex items-center gap-2">
-          <TipoIcon tipo={producto.tipo} className="h-5 w-5 text-foreground-secondary" />
-          <div className="flex flex-col">
-            <h1 className="text-lg font-semibold text-foreground">{producto.nombreCorto}</h1>
-            <span className="text-xs text-foreground-secondary">
-              {producto.sku ?? 'Sin SKU'} · {tipoLabel(producto.tipo)}
-            </span>
-          </div>
+      {/* RESPUESTA visual 2026-08-05 — el botón "‹ Volver" se retira: quedaba fuera de contexto
+          duplicando al breadcrumb, que ahora resuelve el regreso al listado (Breadcrumb.tsx, primer
+          nivel clickeable cuando hay un segundo nivel registrado vía useBreadcrumbExtra). */}
+      <div className="flex items-center gap-2">
+        <TipoIcon tipo={producto.tipo} className="h-5 w-5 text-foreground-secondary" />
+        <div className="flex flex-col">
+          <h1 className="text-lg font-semibold text-foreground">{producto.nombreCorto}</h1>
+          <span className="text-xs text-foreground-secondary">
+            {producto.sku ?? 'Sin SKU'} · {tipoLabel(producto.tipo)}
+          </span>
         </div>
       </div>
 
@@ -58,8 +53,12 @@ export function ProductoDetalleHeader({
         <ProductoEstadoControl productoId={producto.id} estado={producto.estado} puedeCambiarEstado={puedeCambiarEstado} />
 
         {puedeEditar ? (
-          <Button ref={editarBtnRef} variant="secondary" size="sm" onClick={onToggleEdit}>
-            {isEditing ? 'Cancelar' : 'Editar'}
+          // RESPUESTA visual 2026-08-05 — el label ya no alterna a "Cancelar": el cambio de ancho de
+          // texto desplazaba al botón "Eliminar" contiguo. Se deshabilita mientras isEditing=true
+          // (posición y label fijos); cancelar la edición ahora vive junto a "Guardar" en el footer
+          // del form (ProductoInfoGeneralForm), mismo criterio que ProductoCrearForm.
+          <Button ref={editarBtnRef} variant="secondary" size="sm" onClick={onToggleEdit} disabled={isEditing}>
+            Editar
           </Button>
         ) : (
           <LockedActionButton

@@ -6,7 +6,8 @@ import { Button } from '../../../components/Button';
 import { EmptyState } from '../../../components/EmptyState';
 import { LockedActionButton } from '../../../components/LockedActionButton';
 import { SolicitarAccesoModal } from '../../../components/SolicitarAccesoModal';
-import { PlusIcon } from '../../../components/icons';
+import { Tooltip } from '../../../components/Tooltip';
+import { PlusIcon, TrashIcon } from '../../../components/icons';
 import { Skeleton } from '../../../components/Skeleton';
 import { productosTableColumns } from '../components/productosTableColumns';
 import { ProductosFiltrosContent, type ProductosFiltrosDraft } from '../components/ProductosFiltrosContent';
@@ -151,11 +152,19 @@ export function ProductosListPage() {
               onRowClick={(row) => navigate(productoDetalleRoute(row.id))}
               rowActions={(row) =>
                 puedeEliminar ? (
-                  <Button variant="ghost" size="sm" onClick={() => setProductoAEliminar(row)}>
-                    Eliminar
-                  </Button>
+                  <Tooltip content="Eliminar">
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      aria-label={`Eliminar ${row.nombreCorto}`}
+                      onClick={() => setProductoAEliminar(row)}
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
+                  </Tooltip>
                 ) : (
                   <LockedActionButton
+                    iconOnly
                     reason="No tienes permiso para eliminar productos. Solicita acceso a un administrador."
                     onRequestAccess={() => setSolicitudAccion('eliminar productos')}
                   />

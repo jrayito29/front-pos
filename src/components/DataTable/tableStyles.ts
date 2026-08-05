@@ -28,20 +28,16 @@ export const dataTableStyles: TableStyles = {
       paddingRight: '16px',
     },
   },
+  // El hover de fila NO se tematiza aquí: react-data-table-component v8.8 dejó de leer
+  // `rows.highlightOnHoverStyle` en runtime (confirmado contra el bundle, solo sobrevive en los
+  // .d.ts) — el hover ahora es una regla CSS propia de la librería (`--rdt-color-highlight`),
+  // mapeada en brand.css junto al resto de las variables `--rdt-*`.
   rows: {
     style: {
       backgroundColor: 'var(--bg-primary)',
       color: 'var(--text-primary)',
       borderBottomColor: 'var(--border)',
       minHeight: '56px',
-    },
-    highlightOnHoverStyle: {
-      backgroundColor: 'var(--bg-secondary)',
-      color: 'var(--text-primary)',
-      borderBottomColor: 'var(--border)',
-      transitionDuration: '150ms',
-      transitionProperty: 'background-color',
-      outline: 'none',
     },
   },
   cells: {

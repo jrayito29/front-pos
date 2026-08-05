@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router';
 import { ProductoCrearForm } from '../components/ProductoCrearForm';
 import { usePermisos, puedeAccion } from '../../auth/hooks/usePermisos';
+import { useBreadcrumbExtra } from '../../../hooks/useBreadcrumbExtra';
 import { ROUTES } from '../../../constants/routes';
 import { PRODUCTO_ACCION } from '../constants/producto.constants';
 
@@ -8,6 +9,7 @@ import { PRODUCTO_ACCION } from '../constants/producto.constants';
 // depender únicamente de ocultar el botón "Nuevo producto" del listado como control de acceso.
 export function ProductoCrearPage() {
   const { data, isLoading } = usePermisos();
+  useBreadcrumbExtra('Nuevo producto');
 
   if (isLoading) return null;
 

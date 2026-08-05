@@ -1,11 +1,12 @@
 // DTOs del módulo de Productos. Ref: SPEC-009, espejo 1:1 de api-pos/src/interfaces/producto.interfaces.ts
 // (no se importan directamente — proyectos separados, mismo criterio que features/auth/types).
 import type { TipoProductoDomain, EstadoProductoDomain, FuentePrecioDomain } from '../constants/producto.constants';
+import type { UnidadMedidaDTO } from '../../unidades-medida';
 
-export interface UnidadMedidaDTO {
-  label: string;
-  key: string;
-}
+// RESPUESTA-007-migracion-unidad-medida-fk.md (SPEC-016 v1.6.0) — el objeto embebido en las
+// respuestas de lectura de Producto es el mismo `UnidadMedidaDTO` del catálogo (SPEC-021), no un
+// DTO propio de Productos.
+export type { UnidadMedidaDTO };
 
 export interface TagDTO {
   id: string;

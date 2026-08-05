@@ -27,3 +27,8 @@ export const historialPreciosQueryKey = (id: string | undefined, periodo: string
 // CategoriaSelect/SubcategoriaSelect y por cualquier otro módulo que asigne categorías. `params`
 // completo en el key para que cada combinación (soloRaiz/padreId/q) tenga su propia entrada de caché.
 export const categoriasSelectorQueryKey = (params: object) => ['categorias', 'selector', params] as const;
+
+// RESPUESTA-007-migracion-unidad-medida-fk.md — GET /api/v1/unidades-medida (api-pos SPEC-021),
+// consumido por UnidadMedidaSelect. `params` completo en el key para que cada filtro por `tipo`
+// tenga su propia entrada de caché.
+export const unidadesMedidaQueryKey = (params: object) => ['unidades-medida', params] as const;
