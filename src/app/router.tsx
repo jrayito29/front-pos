@@ -44,6 +44,12 @@ const ProductoDetallePage = lazy(() =>
   import('../features/productos/pages/ProductoDetallePage').then((m) => ({ default: m.ProductoDetallePage }))
 );
 
+// Módulo de Categorías — una sola ruta (crear/editar/detalle son modales sobre CategoriasListPage,
+// no rutas propias), mismo criterio de import directo al archivo (no al barrel `features/categorias`).
+const CategoriasListPage = lazy(() =>
+  import('../features/categorias/pages/CategoriasListPage').then((m) => ({ default: m.CategoriasListPage }))
+);
+
 export function AppRouter() {
   return (
     <RouteErrorBoundary>
@@ -88,6 +94,9 @@ export function AppRouter() {
                 <Route path={ROUTES.PRODUCTOS} element={<ProductosListPage />} />
                 <Route path={ROUTES.PRODUCTOS_NUEVO} element={<ProductoCrearPage />} />
                 <Route path={ROUTES.PRODUCTOS_DETALLE} element={<ProductoDetallePage />} />
+              </Route>
+              <Route element={<RequirePermission modulo="modulo.categorias" />}>
+                <Route path={ROUTES.CATEGORIAS} element={<CategoriasListPage />} />
               </Route>
               <Route element={<RequirePermission modulo="modulo.almacenes" />}>
                 <Route path={ROUTES.ALMACENES} element={<RouteStub title="Almacenes" />} />

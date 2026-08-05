@@ -28,6 +28,13 @@ export const historialPreciosQueryKey = (id: string | undefined, periodo: string
 // completo en el key para que cada combinación (soloRaiz/padreId/q) tenga su propia entrada de caché.
 export const categoriasSelectorQueryKey = (params: object) => ['categorias', 'selector', params] as const;
 
+// Módulo de gestión de Categorías (CategoriasListPage/CategoriaDetalleModal) — GET /api/v1/categorias
+// (listado) y GET /api/v1/categorias/:id (detalle). Prefijo `'categorias'` compartido con
+// `categoriasSelectorQueryKey`: `invalidateQueries({ queryKey: ['categorias'] })` (useCrearCategoria y
+// las mutaciones de este módulo) invalida selector + listado + detalle con una sola llamada.
+export const categoriasQueryKey = (filtros: object) => ['categorias', 'listado', filtros] as const;
+export const categoriaQueryKey = (id: string | undefined) => ['categorias', 'detalle', id] as const;
+
 // RESPUESTA-007-migracion-unidad-medida-fk.md — GET /api/v1/unidades-medida (api-pos SPEC-021),
 // consumido por UnidadMedidaSelect. `params` completo en el key para que cada filtro por `tipo`
 // tenga su propia entrada de caché.

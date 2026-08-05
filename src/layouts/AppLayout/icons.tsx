@@ -85,6 +85,29 @@ export function ClientesIcon(props: IconProps) {
   );
 }
 
+// Sub-ítem "Categorías" del grupo "Configuración" (navConfig.ts) — forma de etiqueta/tag, distinta
+// del rombo de ProductosIcon para no confundirse visualmente en el sidebar.
+export function CategoriasIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M11.5 3H5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 .59 1.41l8.5 8.5a2 2 0 0 0 2.82 0l6.5-6.5a2 2 0 0 0 0-2.82l-8.5-8.5A2 2 0 0 0 11.5 3z" />
+      <circle cx="8" cy="8" r="1.3" />
+    </svg>
+  );
+}
+
+// Ítem de grupo "Configuración" (navConfig.ts, NavGroupConfig) — engrane, mismo trazo base que el
+// resto del set. Agrupación puramente visual del frontend, sin relación con `modulo.configuracion`
+// del backend (SPEC-003, exclusivo superadmin).
+export function ConfiguracionIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.4 13.5a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V19.5a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H4.5a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6.1 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H10.5a1.65 1.65 0 0 0 1-1.51V2.5a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8.5a1.65 1.65 0 0 0 1.51 1h.09a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
 export function EmpresasIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>

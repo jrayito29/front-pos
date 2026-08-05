@@ -2,11 +2,11 @@ import { Sidebar as ProSidebar, sidebarClasses } from 'react-pro-sidebar';
 import { SidebarBrand } from './SidebarBrand';
 import { Nav } from './Nav';
 import { SidebarFooter } from './SidebarFooter';
-import type { NavItemConfig } from './navConfig';
+import type { NavEntry } from './navConfig';
 
 interface SidebarProps {
   collapsed: boolean;
-  navItems: NavItemConfig[];
+  navItems: NavEntry[];
   navAriaLabel: string;
   navLoading?: boolean;
   logoUrl?: string;

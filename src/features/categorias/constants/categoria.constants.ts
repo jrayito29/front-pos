@@ -19,4 +19,27 @@ export const CATEGORIA_ERROR_CODE_TO_FIELD: Record<string, string> = {
   [CATEGORIA_ERRORS.PADRE_INVALIDO]: 'padreId',
 };
 
-export const CATEGORIA_ROLES_ESCRITURA = ['superadmin', 'admin'] as const;
+export const ESTADO_CATEGORIA = {
+  ACTIVO: 'ACTIVO',
+  INACTIVO: 'INACTIVO',
+} as const;
+export type EstadoCategoriaDomain = (typeof ESTADO_CATEGORIA)[keyof typeof ESTADO_CATEGORIA];
+
+export const ESTADO_CATEGORIA_LABEL: Record<EstadoCategoriaDomain, string> = {
+  [ESTADO_CATEGORIA.ACTIVO]: 'Activo',
+  [ESTADO_CATEGORIA.INACTIVO]: 'Inactivo',
+};
+
+// RESPUESTA-005-cambio-codigo-error-403-categorias.md — Categorías migró de roles estáticos
+// (`verificarRoles`) al catálogo dinámico de permisos (SPEC-003, `verificarPermiso`). Reemplaza al
+// antiguo `CATEGORIA_ROLES_ESCRITURA` (array hardcodeado contra `data.role`, documentado como deuda
+// pendiente en SPEC-009-productos.md hasta que el backend confirmara esta migración). Claves reales
+// de las 5 acciones del módulo, formato "<modulo>.<accion>" (SPEC-020 §Roles por Operación) —
+// consultar siempre vía `puedeAccion(data, clave)` (features/auth), nunca comparando `data.role`.
+export const CATEGORIA_ACCION = {
+  VER: 'categorias.ver',
+  CREAR: 'categorias.crear',
+  EDITAR: 'categorias.editar',
+  CAMBIAR_ESTADO: 'categorias.cambiar_estado',
+  ELIMINAR: 'categorias.eliminar',
+} as const;

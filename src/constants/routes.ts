@@ -25,6 +25,12 @@ export const ROUTES = {
   PRODUCTOS_DETALLE: '/productos/:id',
   ALMACENES: '/almacenes',
   CLIENTES: '/clientes',
+  // Módulo de gestión de Categorías — crear/editar/detalle viven en modales sobre este único listado
+  // (decisión de producto: pocos campos, no ameritan rutas propias como Productos), protegido por
+  // RequirePermission con `modulo.categorias` (independiente de `modulo.productos`/`modulo.inventario`,
+  // ver SPEC-003 seed). Agrupado bajo "Configuración" en el sidebar (navConfig.ts) — agrupación
+  // puramente visual del frontend, sin relación con `modulo.configuracion` del backend.
+  CATEGORIAS: '/categorias',
   SYSADMIN: '/admin',
   // SPEC-008 REQ-U11 — panel de plataforma, menú estructuralmente distinto al tenant. Sysadmin no
   // pasa por RequirePermission (SPEC-007 §Contexto: acceso total, sin resolución de permisos).

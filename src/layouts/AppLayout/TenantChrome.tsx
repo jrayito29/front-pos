@@ -3,7 +3,7 @@
 // barrel también re-exporta los componentes de auth que hoy viven en chunks async separados.
 import { usePermisos, tieneAccesoTotal, tieneModuloActivo } from '../../features/auth/hooks/usePermisos';
 import { usePerfil } from '../../features/auth/hooks/usePerfil';
-import { TENANT_NAV } from './navConfig';
+import { isNavGroup, TENANT_NAV, type NavEntry } from './navConfig';
 import { Shell } from './Shell';
 
 // SPEC-008 REQ-U10/U12/S3 — único punto donde se llama usePermisos()/usePerfil() para el contexto
@@ -16,9 +16,15 @@ import { Shell } from './Shell';
 export function TenantChrome() {
   const { data, isLoading } = usePermisos();
   const { data: perfil } = usePerfil();
-  const visibleItems = TENANT_NAV.filter(
-    (item) => !item.modulo || tieneAccesoTotal(data) || tieneModuloActivo(data?.modulos, item.modulo)
-  );
+
+  // REQ-U6 — mismo criterio para ítems planos y sub-ítems de grupo; un grupo (ej. "Configuración")
+  // se descarta por completo si, tras filtrar sus `items`, no queda ninguno visible para el usuario.
+  const puedeVerItem = (item: { modulo?: string }) => !item.modulo || tieneAccesoTotal(data) || tieneModuloActivo(data?.modulos, item.modulo);
+  const visibleItems: NavEntry[] = TENANT_NAV.flatMap((entry) => {
+    if (!isNavGroup(entry)) return puedeVerItem(entry) ? [entry] : [];
+    const items = entry.items.filter(puedeVerItem);
+    return items.length > 0 ? [{ ...entry, items }] : [];
+  });
 
   return (
     <Shell

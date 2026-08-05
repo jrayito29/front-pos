@@ -3,7 +3,9 @@ import { ROUTES } from '../../constants/routes';
 import {
   AlmacenesIcon,
   AuditoriaIcon,
+  CategoriasIcon,
   ClientesIcon,
+  ConfiguracionIcon,
   CotizacionesIcon,
   EmpresasIcon,
   InventarioIcon,
@@ -24,10 +26,34 @@ export interface NavItemConfig {
   modulo?: string;
 }
 
+// Grupo expandible del sidebar (ej. "Configuración") — agrupación puramente visual del frontend, sin
+// gate de permiso propio: cada sub-ítem resuelve su propio `modulo` como cualquier NavItemConfig. El
+// grupo se oculta por completo si, tras filtrar `items` por permiso, no queda ninguno visible
+// (TenantChrome.tsx).
+export interface NavGroupConfig {
+  key: string;
+  label: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  items: NavItemConfig[];
+}
+
+export type NavEntry = NavItemConfig | NavGroupConfig;
+
+export function isNavGroup(entry: NavEntry): entry is NavGroupConfig {
+  return 'items' in entry;
+}
+
+// Topbar/Breadcrumb solo necesitan la lista plana de rutas+labels para resolver el nivel activo
+// (nunca renderizan la agrupación visual) — aplana un `NavEntry[]` a `NavItemConfig[]`.
+export function flattenNavItems(entries: NavEntry[]): NavItemConfig[] {
+  return entries.flatMap((entry) => (isNavGroup(entry) ? entry.items : [entry]));
+}
+
 // SPEC-008 REQ-U10 — lista única compartida por todos los roles de contexto tenant (admin,
 // superadmin, cajero, ...). La visibilidad de cada ítem se resuelve por permiso en TenantChrome,
-// nunca hardcodeada aquí por rol.
-export const TENANT_NAV: NavItemConfig[] = [
+// nunca hardcodeada aquí por rol. El grupo "Configuración" hoy solo agrupa Categorías — estructura
+// lista para sumar más sub-ítems de configuración del sistema sin rehacerla.
+export const TENANT_NAV: NavEntry[] = [
   { key: 'panel', label: 'Panel', to: ROUTES.DASHBOARD, icon: PanelIcon },
   { key: 'ventas', label: 'Ventas', to: ROUTES.VENTAS, icon: VentasIcon, modulo: 'modulo.ventas' },
   { key: 'cotizaciones', label: 'Cotizaciones', to: ROUTES.COTIZACIONES, icon: CotizacionesIcon, modulo: 'modulo.cotizaciones' },
@@ -35,6 +61,12 @@ export const TENANT_NAV: NavItemConfig[] = [
   { key: 'productos', label: 'Productos', to: ROUTES.PRODUCTOS, icon: ProductosIcon, modulo: 'modulo.productos' },
   { key: 'almacenes', label: 'Almacenes', to: ROUTES.ALMACENES, icon: AlmacenesIcon, modulo: 'modulo.almacenes' },
   { key: 'clientes', label: 'Clientes', to: ROUTES.CLIENTES, icon: ClientesIcon, modulo: 'modulo.clientes' },
+  {
+    key: 'configuracion',
+    label: 'Configuración',
+    icon: ConfiguracionIcon,
+    items: [{ key: 'categorias', label: 'Categorías', to: ROUTES.CATEGORIAS, icon: CategoriasIcon, modulo: 'modulo.categorias' }],
+  },
 ];
 
 // SPEC-008 REQ-U11 — menú estructuralmente distinto, no una variante filtrada del tenant. Sysadmin

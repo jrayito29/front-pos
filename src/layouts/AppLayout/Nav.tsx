@@ -1,12 +1,18 @@
-import { Menu, MenuItem } from 'react-pro-sidebar';
+import { Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { Link, useLocation } from 'react-router';
 import { Skeleton } from '../../components/Skeleton';
-import type { NavItemConfig } from './navConfig';
+import { isNavGroup, type NavEntry, type NavItemConfig } from './navConfig';
 
 interface NavProps {
-  items: NavItemConfig[];
+  items: NavEntry[];
   ariaLabel: string;
   loading?: boolean;
+}
+
+// REQ-U14 (adenda) — mismo match por prefijo que el resto del sidebar: una subruta debe seguir
+// marcando activo su ítem.
+function isItemActive(item: NavItemConfig, pathname: string): boolean {
+  return item.to === '/' ? pathname === '/' : pathname.startsWith(`${item.to}/`) || pathname === item.to;
 }
 
 // SPEC-008 REQ-S3 — skeleton mientras se resuelve el permiso (TenantChrome), en vez de parpadear
@@ -62,16 +68,32 @@ export function Nav({ items, ariaLabel, loading = false }: NavProps) {
         }),
       }}
     >
-      {items.map((item) => {
-        const Icon = item.icon;
-        // SPEC-008 REQ-U14 (adenda) — match por prefijo, no solo igualdad exacta: un módulo con
-        // subrutas (ej. Productos: /productos/nuevo, /productos/:id) debe seguir marcado como activo
-        // en el sidebar mientras se navega dentro de él. El `/` final evita que `/productos` matchee
-        // por accidente algo como `/productos-x`.
-        const active = item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(`${item.to}/`) || location.pathname === item.to;
+      {items.map((entry) => {
+        const Icon = entry.icon;
+
+        if (isNavGroup(entry)) {
+          // El grupo se expande por defecto si alguna de sus rutas hijas está activa (ej. al entrar
+          // directo a /categorias por URL) — en cualquier otro caso arranca colapsado.
+          const groupActive = entry.items.some((item) => isItemActive(item, location.pathname));
+          return (
+            <SubMenu key={entry.key} label={entry.label} icon={<Icon className="h-5 w-5" />} defaultOpen={groupActive}>
+              {entry.items.map((item) => (
+                <MenuItem
+                  key={item.key}
+                  icon={<item.icon className="h-5 w-5" />}
+                  active={isItemActive(item, location.pathname)}
+                  component={<Link to={item.to} />}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </SubMenu>
+          );
+        }
+
         return (
-          <MenuItem key={item.key} icon={<Icon className="h-5 w-5" />} active={active} component={<Link to={item.to} />}>
-            {item.label}
+          <MenuItem key={entry.key} icon={<Icon className="h-5 w-5" />} active={isItemActive(entry, location.pathname)} component={<Link to={entry.to} />}>
+            {entry.label}
           </MenuItem>
         );
       })}

@@ -3,10 +3,10 @@ import { useUiStore } from '../../stores/ui.store';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ContentArea } from './ContentArea';
-import type { NavItemConfig } from './navConfig';
+import { flattenNavItems, type NavEntry } from './navConfig';
 
 interface ShellProps {
-  navItems: NavItemConfig[];
+  navItems: NavEntry[];
   navAriaLabel: string;
   navLoading?: boolean;
   role: string | undefined;
@@ -39,7 +39,7 @@ export function Shell({ navItems, navAriaLabel, navLoading, role, nombre, logoUr
         companyName={companyName}
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar navItems={navItems} role={role} nombre={nombre} />
+        <Topbar navItems={flattenNavItems(navItems)} role={role} nombre={nombre} />
         <ContentArea />
       </div>
     </div>
