@@ -19,7 +19,10 @@ export function TenantChrome() {
 
   // REQ-U6 — mismo criterio para ítems planos y sub-ítems de grupo; un grupo (ej. "Configuración")
   // se descarta por completo si, tras filtrar sus `items`, no queda ninguno visible para el usuario.
-  const puedeVerItem = (item: { modulo?: string }) => !item.modulo || tieneAccesoTotal(data) || tieneModuloActivo(data?.modulos, item.modulo);
+  // SPEC-011 REQ-U8 — `soloRol` (ej. "Usuarios") es un gate por rol estático, independiente del
+  // catálogo dinámico de permisos: se resuelve antes y en vez de `modulo`, nunca combinado con él.
+  const puedeVerItem = (item: { modulo?: string; soloRol?: string }) =>
+    item.soloRol ? data?.role === item.soloRol : !item.modulo || tieneAccesoTotal(data) || tieneModuloActivo(data?.modulos, item.modulo);
   const visibleItems: NavEntry[] = TENANT_NAV.flatMap((entry) => {
     if (!isNavGroup(entry)) return puedeVerItem(entry) ? [entry] : [];
     const items = entry.items.filter(puedeVerItem);

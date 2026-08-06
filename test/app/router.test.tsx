@@ -128,4 +128,54 @@ describe('AppRouter — rutas protegidas dentro de AppLayout (SPEC-008)', () => 
 
     expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
   });
+
+  // spec:SPEC-011:REQ-X3 — wiring real de RequireRole (gate por rol estático, no RequirePermission)
+  it('/usuarios redirige a /no-autorizado cuando el rol activo no es superadmin', async () => {
+    vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = permisosYPerfilAdapter();
+
+    renderAt(ROUTES.USUARIOS);
+
+    expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
+  });
+
+  // spec:SPEC-011:REQ-U1/U2 — con rol superadmin, /usuarios renderiza UsuariosListPage dentro del shell
+  it('/usuarios renderiza UsuariosListPage cuando el rol activo es superadmin', async () => {
+    vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = (async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+      if (config.url === '/auth/perfil') {
+        return {
+          data: { success: true, data: { nombre: 'Ana García', empresa: { nombre: 'Distribuidora del Norte', logoUrl: null } } },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      if (config.url === '/usuarios') {
+        return { data: { success: true, data: [], meta: { page: 1, limit: 20, total: 0 } }, status: 200, statusText: 'OK', headers: {}, config };
+      }
+      return {
+        data: { success: true, data: { userId: 'usuario-9', role: 'superadmin', accesoTotal: true, modulos: [] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    }) as AxiosAdapter;
+
+    renderAt(ROUTES.USUARIOS);
+
+    // Timeout ampliado (default 1000ms): a diferencia de /ventas o /categorias (RouteStub estático),
+    // esta ruta resuelve un `React.lazy()` real (primera descarga del chunk de UsuariosListPage) más
+    // dos peticiones secuenciales (permisos, usuarios) — bajo carga (suite completa en paralelo) el
+    // timeout por defecto puede no alcanzar, aunque el flujo real sea correcto.
+    expect(await screen.findByRole('heading', { name: 'Usuarios' }, { timeout: 5000 })).toBeInTheDocument();
+  });
 });

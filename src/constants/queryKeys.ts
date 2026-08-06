@@ -39,3 +39,10 @@ export const categoriaQueryKey = (id: string | undefined) => ['categorias', 'det
 // consumido por UnidadMedidaSelect. `params` completo en el key para que cada filtro por `tipo`
 // tenga su propia entrada de caché.
 export const unidadesMedidaQueryKey = (params: object) => ['unidades-medida', params] as const;
+
+// SPEC-011 — Módulo de gestión de Usuarios (UsuariosListPage/UsuarioDetalleModal), exclusivo
+// superadmin. GET /api/v1/usuarios (listado) y GET /api/v1/usuarios/:id (detalle). Prefijo
+// `'usuarios'` compartido entre ambos — `invalidateQueries({ queryKey: ['usuarios'] })`
+// (invalidateUsuarioQueries) invalida listado + detalle con una sola llamada.
+export const usuariosQueryKey = (filtros: object) => ['usuarios', 'listado', filtros] as const;
+export const usuarioQueryKey = (id: string | undefined) => ['usuarios', 'detalle', id] as const;

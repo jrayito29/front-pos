@@ -5,6 +5,7 @@ import { RouteStub } from './RouteStub';
 import { RequireAuth } from './RequireAuth';
 import { RequireOnboarding } from './RequireOnboarding';
 import { RequirePermission } from './RequirePermission';
+import { RequireRole } from './RequireRole';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { RouteLoadingSkeleton } from './RouteLoadingSkeleton';
 // SPEC-008 — shell compartido (sidebar/topbar/scroll de contenido) para toda ruta protegida. Import
@@ -48,6 +49,12 @@ const ProductoDetallePage = lazy(() =>
 // no rutas propias), mismo criterio de import directo al archivo (no al barrel `features/categorias`).
 const CategoriasListPage = lazy(() =>
   import('../features/categorias/pages/CategoriasListPage').then((m) => ({ default: m.CategoriasListPage }))
+);
+
+// Módulo de Usuarios (SPEC-011) — misma decisión de "una sola ruta, modales" que Categorías; import
+// directo al archivo (no al barrel `features/usuarios`).
+const UsuariosListPage = lazy(() =>
+  import('../features/usuarios/pages/UsuariosListPage').then((m) => ({ default: m.UsuariosListPage }))
 );
 
 export function AppRouter() {
@@ -97,6 +104,11 @@ export function AppRouter() {
               </Route>
               <Route element={<RequirePermission modulo="modulo.categorias" />}>
                 <Route path={ROUTES.CATEGORIAS} element={<CategoriasListPage />} />
+              </Route>
+              {/* SPEC-011 REQ-U3 — gate por rol estático (RequireRole), no por RequirePermission: no
+                  existe `modulo.usuarios` en el catálogo dinámico de permisos. */}
+              <Route element={<RequireRole role="superadmin" />}>
+                <Route path={ROUTES.USUARIOS} element={<UsuariosListPage />} />
               </Route>
               <Route element={<RequirePermission modulo="modulo.almacenes" />}>
                 <Route path={ROUTES.ALMACENES} element={<RouteStub title="Almacenes" />} />

@@ -31,6 +31,12 @@ export const ROUTES = {
   // ver SPEC-003 seed). Agrupado bajo "Configuración" en el sidebar (navConfig.ts) — agrupación
   // puramente visual del frontend, sin relación con `modulo.configuracion` del backend.
   CATEGORIAS: '/categorias',
+  // Módulo de gestión de Usuarios (SPEC-011) — exclusivo superadmin, gateado por rol estático
+  // (app/RequireRole), no por RequirePermission: no existe `modulo.usuarios` en el catálogo
+  // dinámico de permisos (el backend gatea sus endpoints con `verificarRole` directo). Distinto de
+  // ROUTES.SYSADMIN_USUARIOS (`/admin/usuarios`, panel de plataforma, contexto sysadmin) — mismo
+  // nombre de dominio, módulos no relacionados.
+  USUARIOS: '/usuarios',
   SYSADMIN: '/admin',
   // SPEC-008 REQ-U11 — panel de plataforma, menú estructuralmente distinto al tenant. Sysadmin no
   // pasa por RequirePermission (SPEC-007 §Contexto: acceso total, sin resolución de permisos).

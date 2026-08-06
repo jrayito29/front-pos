@@ -13,6 +13,12 @@ interface ModalProps {
   // distintas (un botón pequeño vs. una modal ancha con formulario). Sin `originRef`, cae a un
   // scale+fade sutil centrado.
   originRef?: RefObject<HTMLElement | null>;
+  // SPEC-011 REQ-S3 — cuando es `false`, el backdrop y `Escape` dejan de invocar `onClose`: solo el
+  // botón explícito de `children` puede cerrar la modal. Pensado para contenido que documenta un
+  // hecho ya consumido y no recuperable (ej. UsuarioCreadoModal, una contraseña temporal que el
+  // backend garantiza no repetir) — un cierre accidental no debe poder perderlo de vista sin que el
+  // usuario lo haya reconocido explícitamente. Default `true` (comportamiento sin cambios).
+  dismissible?: boolean;
 }
 
 // La salida es más corta que la entrada (~70%, regla `exit-faster-than-enter`) — se siente más
@@ -39,7 +45,7 @@ function prefersReducedMotion(): boolean {
 // producción: clic en "Guardar" navegaba a `/productos/nuevo?nombre=&descripcion=` sin validar). El
 // portal saca el DOM de la modal fuera del `<form>` que la contiene — visualmente no cambia nada (ya
 // se posicionaba con `fixed`), pero deja de estar anidada.
-export function Modal({ isOpen, title, onClose, children, originRef }: ModalProps) {
+export function Modal({ isOpen, title, onClose, children, originRef, dismissible = true }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [entered, setEntered] = useState(false);
   const [offset, setOffset] = useState({ dx: 0, dy: 0 });
@@ -103,7 +109,7 @@ export function Modal({ isOpen, title, onClose, children, originRef }: ModalProp
       <div
         className="absolute inset-0 bg-black/60 transition-opacity ease-out"
         style={{ opacity: entered ? 1 : 0, transitionDuration: `${durationMs}ms` }}
-        onClick={onClose}
+        onClick={dismissible ? onClose : undefined}
         aria-hidden="true"
       />
       <div
@@ -112,7 +118,7 @@ export function Modal({ isOpen, title, onClose, children, originRef }: ModalProp
         aria-modal="true"
         aria-labelledby="modal-title"
         onKeyDown={(event) => {
-          if (event.key === 'Escape') onClose();
+          if (event.key === 'Escape' && dismissible) onClose();
         }}
         style={{ transform: panelTransform, opacity: entered ? 1 : 0, transitionDuration: `${durationMs}ms` }}
         className="relative z-10 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-sm transition-[transform,opacity] ease-out"

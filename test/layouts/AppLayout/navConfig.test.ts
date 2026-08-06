@@ -32,13 +32,17 @@ describe('flattenNavItems', () => {
 });
 
 describe('TENANT_NAV', () => {
-  it('incluye el grupo "configuracion" con "categorias" como único sub-ítem hoy', () => {
+  // spec:SPEC-011:REQ-U8 — el grupo "configuracion" ahora incluye también "usuarios", gateado por
+  // `soloRol` en vez de `modulo`.
+  it('incluye el grupo "configuracion" con "categorias" y "usuarios" como sub-ítems', () => {
     const configuracion = TENANT_NAV.find((entry) => entry.key === 'configuracion');
     expect(configuracion).toBeDefined();
     expect(isNavGroup(configuracion!)).toBe(true);
     if (isNavGroup(configuracion!)) {
-      expect(configuracion.items).toHaveLength(1);
+      expect(configuracion.items).toHaveLength(2);
       expect(configuracion.items[0]).toMatchObject({ key: 'categorias', to: '/categorias', modulo: 'modulo.categorias' });
+      expect(configuracion.items[1]).toMatchObject({ key: 'usuarios', to: '/usuarios', soloRol: 'superadmin' });
+      expect(configuracion.items[1].modulo).toBeUndefined();
     }
   });
 });

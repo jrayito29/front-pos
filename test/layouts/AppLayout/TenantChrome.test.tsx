@@ -121,10 +121,13 @@ describe('TenantChrome', () => {
     expect(screen.getByRole('link', { name: 'Almacenes' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Clientes' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Categorías' })).toBeInTheDocument();
+    // spec:SPEC-011:REQ-U8 — accesoTotal (superadmin) también satisface el gate por `soloRol`.
+    expect(screen.getByRole('link', { name: 'Usuarios' })).toBeInTheDocument();
   });
 
   // spec:SPEC-010:REQ-U8 — el grupo "Configuración" se resuelve con el mismo criterio de permiso
-  // que cualquier ítem plano, sobre su único sub-ítem hoy (Categorías).
+  // que cualquier ítem plano, evaluando cada sub-ítem por su propio gate (Categorías por `modulo`,
+  // Usuarios por `soloRol` — SPEC-011 REQ-U8).
   it('muestra el grupo "Configuración" con "Categorías" cuando el módulo está activo para el usuario', async () => {
     useSessionStore
       .getState()
@@ -135,6 +138,10 @@ describe('TenantChrome', () => {
 
     expect(await screen.findByRole('link', { name: 'Categorías' })).toBeInTheDocument();
     expect(screen.getByText('Configuración')).toBeInTheDocument();
+    // spec:SPEC-011:REQ-U8 — el rol activo aquí es "cajero" (permisosFixture sin accesoTotal): el
+    // gate por `soloRol` es independiente del módulo dinámico, "Usuarios" permanece oculto aunque
+    // "Categorías" (gate por `modulo`) sí sea visible.
+    expect(screen.queryByRole('link', { name: 'Usuarios' })).not.toBeInTheDocument();
   });
 
   // spec:SPEC-010:REQ-U8 — un grupo sin ningún sub-ítem visible se oculta por completo (hoy

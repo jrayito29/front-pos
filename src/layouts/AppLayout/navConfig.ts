@@ -24,6 +24,11 @@ export interface NavItemConfig {
   // Clave `modulo.<x>` a resolver con tieneModuloActivo (SPEC-007 REQ-U3). `undefined` = siempre
   // visible, sin gate de permiso (ej. Panel, la vista de aterrizaje de cualquier usuario tenant).
   modulo?: string;
+  // SPEC-011 REQ-U8 — gate por rol estático de plataforma (ej. "superadmin"), en vez de `modulo`
+  // dinámico. Mutuamente excluyente con `modulo` en la práctica: hoy solo "Usuarios" lo usa, porque
+  // no existe una clave `modulo.usuarios` en el catálogo de permisos (SPEC-011 REQ-U3) — ver
+  // TenantChrome.tsx, `puedeVerItem`.
+  soloRol?: string;
 }
 
 // Grupo expandible del sidebar (ej. "Configuración") — agrupación puramente visual del frontend, sin
@@ -65,7 +70,11 @@ export const TENANT_NAV: NavEntry[] = [
     key: 'configuracion',
     label: 'Configuración',
     icon: ConfiguracionIcon,
-    items: [{ key: 'categorias', label: 'Categorías', to: ROUTES.CATEGORIAS, icon: CategoriasIcon, modulo: 'modulo.categorias' }],
+    items: [
+      { key: 'categorias', label: 'Categorías', to: ROUTES.CATEGORIAS, icon: CategoriasIcon, modulo: 'modulo.categorias' },
+      // SPEC-011 REQ-U8 — sin `modulo`: gate por `soloRol`, no por el catálogo dinámico de permisos.
+      { key: 'usuarios', label: 'Usuarios', to: ROUTES.USUARIOS, icon: UsuariosIcon, soloRol: 'superadmin' },
+    ],
   },
 ];
 
