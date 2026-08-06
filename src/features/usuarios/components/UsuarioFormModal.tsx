@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import type { ChangeEvent } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -15,6 +16,12 @@ import { ROLES_ASIGNABLES, USUARIO_ROL_LABEL } from '../constants/usuario.consta
 import type { UsuarioCreadoDTO } from '../types/usuario.types';
 
 const ROL_OPTIONS = ROLES_ASIGNABLES.map((value) => ({ value, label: USUARIO_ROL_LABEL[value] }));
+
+// Mismo criterio que StepDatosPersonales (auth) — bloquea letras/signos en tiempo real; el Zod
+// schema sigue siendo la fuente de verdad para el formato final (10 dígitos).
+function sanitizeTelefonoInput(event: ChangeEvent<HTMLInputElement>) {
+  event.target.value = event.target.value.replace(/[^\d\s-]/g, '');
+}
 
 interface UsuarioFormModalProps {
   isOpen: boolean;
@@ -89,7 +96,14 @@ export function UsuarioFormModal({ isOpen, onClose, onCreated, originRef }: Usua
           {...form.register('apellidoPaterno')}
         />
         <Input label="Apellido materno" error={form.formState.errors.apellidoMaterno?.message} {...form.register('apellidoMaterno')} />
-        <Input label="Teléfono" type="tel" error={form.formState.errors.telefono?.message} {...form.register('telefono')} />
+        <Input
+          label="Teléfono"
+          type="tel"
+          inputMode="numeric"
+          maxLength={12}
+          error={form.formState.errors.telefono?.message}
+          {...form.register('telefono', { onChange: sanitizeTelefonoInput })}
+        />
 
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>
