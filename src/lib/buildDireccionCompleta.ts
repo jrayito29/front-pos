@@ -8,11 +8,11 @@ export interface DireccionCompletaInput {
   codigoPostal: string;
 }
 
-// SPEC-012 REQ-U5 — `direccionCompleta` es estado derivable (CLAUDE.md §9): nunca es un input
-// propio, se recalcula en cada render a partir de los demás campos de dirección. Formato libre — el
-// backend solo exige un string de 1 a 500 caracteres (api-pos SPEC-014 §Modelos de Datos), no hay
-// contrato sobre abreviaturas de entidad federativa: se usa el valor de `estado` tal como el
-// usuario lo escribió.
+// SPEC-012 REQ-U5 (actualizado) — formateador puro que compone una sugerencia de `direccionCompleta`
+// a partir de los demás campos de dirección; en SucursalCrearForm el usuario puede sobreescribir
+// libremente esa sugerencia (ver SucursalDireccionFields). Formato libre — el backend solo exige un
+// string de 1 a 500 caracteres (api-pos SPEC-014 §Modelos de Datos), no hay contrato sobre
+// abreviaturas de entidad federativa: se usa el valor de `estado` tal como el usuario lo escribió.
 export function buildDireccionCompleta(input: DireccionCompletaInput): string {
   const { calle, numeroExterior, numeroInterior, colonia, municipio, estado, codigoPostal } = input;
 

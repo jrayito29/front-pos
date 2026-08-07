@@ -9,18 +9,22 @@ function sanitizeCodigoPostalInput(event: ChangeEvent<HTMLInputElement>) {
 }
 
 interface SucursalDireccionFieldsProps {
-  direccionCompleta: string;
+  direccionCompletaSugerida: string;
 }
 
-// SPEC-012 REQ-U5 — usado únicamente por SucursalCrearForm (useFormContext<CrearSucursalInput>).
+// SPEC-012 REQ-U5 (actualizado) — usado únicamente por SucursalCrearForm (useFormContext<CrearSucursalInput>).
 // SucursalInfoGeneralForm (editar) NO reutiliza este componente: mismo criterio que
 // ProductoIdentificacionFields/ProductoInfoGeneralForm — tipos de formulario distintos
 // (CrearSucursalInput vs ActualizarSucursalInput), misma estructura JSX duplicada a propósito.
-// `direccionCompleta` se calcula en el padre (buildDireccionCompleta) y solo se muestra aquí como
-// preview de solo lectura, nunca como input.
-export function SucursalDireccionFields({ direccionCompleta }: SucursalDireccionFieldsProps) {
+// `direccionCompletaSugerida` se calcula en el padre (buildDireccionCompleta) a partir de los 7
+// campos y se ofrece como sugerencia clickeable — mismo patrón que
+// ProductoIdentificacionFields/ProductoCostosFields. El campo `direccionCompleta` del formulario es
+// libremente editable; si el usuario lo deja vacío, el submit usa la sugerencia calculada como
+// fallback (ver SucursalCrearForm).
+export function SucursalDireccionFields({ direccionCompletaSugerida }: SucursalDireccionFieldsProps) {
   const {
     register,
+    setValue,
     formState: { errors },
   } = useFormContext<CrearSucursalInput>();
 
@@ -56,11 +60,22 @@ export function SucursalDireccionFields({ direccionCompleta }: SucursalDireccion
         />
       </div>
 
-      {direccionCompleta && (
-        <p className="text-sm text-foreground-secondary">
-          <span className="font-medium text-foreground-muted">Dirección completa: </span>
-          {direccionCompleta}
-        </p>
+      {direccionCompletaSugerida && (
+        <div className="flex flex-col gap-1.5">
+          <Input
+            label="Dirección completa"
+            placeholder={direccionCompletaSugerida}
+            error={errors.direccionCompleta?.message}
+            {...register('direccionCompleta')}
+          />
+          <button
+            type="button"
+            onClick={() => setValue('direccionCompleta', direccionCompletaSugerida, { shouldValidate: true })}
+            className="self-start text-xs text-brand-green-text hover:underline"
+          >
+            Sugerencia: "{direccionCompletaSugerida}" — usar
+          </button>
+        </div>
       )}
     </fieldset>
   );

@@ -93,21 +93,42 @@ describe('SucursalCrearForm', () => {
     expect(screen.getByText('SUC-')).toBeInTheDocument();
   });
 
-  // spec:SPEC-012:REQ-U5 — direccionCompleta se calcula en vivo y se muestra como preview de solo lectura
-  it('calcula y muestra la dirección completa a medida que se llenan los campos', async () => {
+  // spec:SPEC-012:REQ-U5/E10 — direccionCompleta se ofrece como sugerencia clickeable a medida que
+  // se llenan los campos, sin sobreescribir el input editable
+  it('calcula y ofrece la dirección completa como sugerencia clickeable a medida que se llenan los campos', async () => {
     mockHook();
     const user = userEvent.setup();
     renderForm();
 
-    expect(screen.queryByText('Dirección completa:', { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Dirección completa', { exact: false })).not.toBeInTheDocument();
 
     await llenarCamposRequeridos(user);
 
-    expect(screen.getByText('Av. Juárez 123, Col. Centro, Monterrey, Nuevo León 64000', { exact: false })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Sugerencia: "Av. Juárez 123, Col. Centro, Monterrey, Nuevo León 64000" — usar' })
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Dirección completa', { exact: false })).toHaveValue('');
   });
 
-  // spec:SPEC-012:REQ-U4/U5/U8 — payload completo en el submit
-  it('al guardar, envía direccionCompleta calculada, código con prefijo "SUC-" y almacenesOpcionales', async () => {
+  // spec:SPEC-012:REQ-U5 — el usuario puede reescribir la dirección completa sugerida
+  it('permite reescribir la dirección completa y la envía tal como el usuario la dejó', async () => {
+    mockHook();
+    mutateMock.mockImplementation((_payload, options) => options.onSuccess(sucursalCreada()));
+    const user = userEvent.setup();
+    renderForm();
+
+    await llenarCamposRequeridos(user);
+    await user.type(screen.getByLabelText('Dirección completa', { exact: false }), 'Av. Juárez #123, Centro, Monterrey');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(mutateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ direccionCompleta: 'Av. Juárez #123, Centro, Monterrey' }),
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) })
+    );
+  });
+
+  // spec:SPEC-012:REQ-U4/U5/U8 — payload completo en el submit, usando la sugerencia calculada como fallback
+  it('al guardar sin reescribir la dirección, envía direccionCompleta calculada, código con prefijo "SUC-" y almacenesOpcionales', async () => {
     mockHook();
     mutateMock.mockImplementation((_payload, options) => options.onSuccess(sucursalCreada()));
     const user = userEvent.setup();

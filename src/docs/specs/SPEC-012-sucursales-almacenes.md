@@ -5,7 +5,7 @@
 - **ID**: SPEC-012
 - **Dominio**: config
 - **Versión**: 1.0.0
-- **Estado**: draft
+- **Estado**: active
 - **Owner**: `Equipo Frontend POS-MX`
 - **Creada**: 2026-08-06
 - **Última revisión**: 2026-08-06
@@ -95,7 +95,7 @@ Detalle — /sucursales/:id
 - **REQ-U2**: A diferencia de Categorías, crear y ver/editar Sucursal DEBEN vivir en rutas propias (`/sucursales/nuevo`, `/sucursales/:id`) — nunca modales — dado el volumen de campos (datos generales + dirección de 7 campos + configuración de almacenes al crear). Mismo patrón que Productos (`SPEC-009` REQ-U19/U23).
 - **REQ-U3**: `GET /api/v1/sucursales` (backend, `listarSucursalesService`) devuelve `SucursalDTO[]` completo — mismo shape que el detalle (`telefono`, `email`, dirección completa, timestamps incluidos; sin `almacenes`, exclusivo de `GET /:id`) — no existe un DTO reducido para Sucursal, a diferencia de `CategoriaResumenDTO`. Aun así, las columnas del listado DEBEN limitarse a Nombre, Código (`codigoPersonalizable` si existe, si no `codigoInterno`), Ubicación (`municipio`, `estado`) y Estado (badge de `activo`) — es una decisión de presentación, no una limitación de datos; el resto de campos de `SucursalDTO` solo se muestran en el detalle. La columna "Estado" refleja siempre el booleano `activo`; el campo de dirección `estado` (entidad federativa) solo aparece dentro de "Ubicación" o de la sección Dirección de los formularios, nunca bajo el mismo encabezado que pueda confundirse con el estado activo/inactivo.
 - **REQ-U4**: El campo `codigoPersonalizable` de Sucursal (opcional) DEBE capturarse con un prefijo visual fijo "SUC-" (adornment no editable del `Input`, mismo criterio `input-helper-text`) — el usuario solo escribe el sufijo; el valor final enviado al backend (`"SUC-" + sufijo`) se arma en el submit del formulario, nunca se le exige al usuario escribir o recordar el prefijo que exige el regex del backend (`crearSucursalSchema` en `api-pos`).
-- **REQ-U5**: El campo `direccionCompleta` NUNCA es un input editable por el usuario — es estado derivable (CLAUDE.md §9): se calcula en cada render a partir de `calle, numeroExterior, numeroInterior, colonia, municipio, estado, codigoPostal` con un formateador puro (`buildDireccionCompleta()`), se muestra como texto de solo lectura bajo la sección Dirección de `SucursalCrearForm`/`SucursalInfoGeneralForm`, y ese valor calculado es el que viaja en el payload de `crearSucursalSchema`/`actualizarSucursalSchema`.
+- **REQ-U5**: El campo `direccionCompleta` de `SucursalCrearForm` es un input editable por el usuario (override opcional en `crearSucursalSchema`). Por defecto se ofrece como sugerencia clickeable el valor calculado en cada render a partir de `calle, numeroExterior, numeroInterior, colonia, municipio, estado, codigoPostal` con un formateador puro (`buildDireccionCompleta()`) — mismo patrón "campo editable + sugerencia" que `ProductoIdentificacionFields`/`ProductoCostosFields` (`nombreCorto`/`precioVenta`). Si el usuario deja el campo vacío, el submit usa el valor calculado como fallback; si lo reescribe, ese valor es el que viaja en el payload de `POST /sucursales`. `SucursalInfoGeneralForm` (editar) conserva el criterio previo: `direccionCompleta` se muestra como texto de solo lectura y no es editable ahí.
 - **REQ-U6**: `SucursalDetallePage` DEBE seguir el mismo patrón que `ProductoDetallePage` (`SPEC-009` REQ-U23 a U34): una sola ruta `/sucursales/:id`, un botón "Editar" en el header alterna entre `SucursalInfoGeneralReadOnly` y `SucursalInfoGeneralForm` dentro de la tab "Información general" — nunca una ruta o modal propios para editar.
 - **REQ-U7**: La tab "Almacenes" del detalle de Sucursal DEBE consumir `GET /sucursales/:sucursalId/almacenes` (paginado, filtros `q, activo, tipo`) vía `useAlmacenesDeSucursal()` + `DataTable` genérico — independiente del arreglo `almacenes` embebido en `SucursalConAlmacenesDTO` (ese arreglo solo trae almacenes activos y no pagina; se usa únicamente para el badge de conteo "Almacenes (N)" del header de tabs, nunca como fuente de la tabla).
 - **REQ-U8**: El formulario de creación de Sucursal DEBE mostrar la sección "Almacenes que se crearán" con 5 filas: Ventas, Mermas y Tránsito como `Switch` fijos en `true` y deshabilitados (nota "Siempre se crea"); Reserva y Apartados como `Switch` editables en `false` por defecto, mapeando a `almacenesOpcionales.incluirReserva`/`incluirApartados` del payload de `POST /sucursales`.
@@ -122,7 +122,7 @@ Detalle — /sucursales/:id
 - **REQ-E7**: Cuando el usuario haga clic en "+ Agregar almacén", el sistema DEBE abrir `AlmacenFormModal` en modo crear, con `tipo` fijo en `PERSONALIZADO` (no seleccionable — es el único tipo creable manualmente, `SPEC-014` REQ-E6) y la sección Dirección colapsada por defecto con la nota "Si no la completas, se usará la dirección de la sucursal" (refleja `SPEC-014` REQ-E8).
 - **REQ-E8**: Cuando `AlmacenEstadoControl` envíe `PATCH /almacenes/:id/estado` con `activo: false` y el backend responda `409 ERR_ALMACEN_CON_STOCK`, el sistema DEBE mostrarlo vía toast — a diferencia de Sucursal (REQ-E4), no hay modal de confirmación previa porque el backend no expone el stock de un almacén individual antes del intento.
 - **REQ-E9**: Cuando cualquier mutación de escritura del módulo (crear/editar sucursal, cambiar estado de sucursal, crear/editar/cambiar estado de almacén) se complete con éxito, el sistema DEBE invalidar `['sucursales']` en bloque (`invalidateSucursalQueries`, predicate sobre el primer segmento del query key) — cubre listado, detalle y tabla de almacenes de esa sucursal con una sola invalidación (CLAUDE.md §6).
-- **REQ-E10**: `direccionCompleta` (REQ-U5) DEBE recalcularse ante cualquier cambio de los 7 campos de dirección que lo componen — no requiere que el usuario interactúe con el propio campo, que nunca es interactivo.
+- **REQ-E10**: La sugerencia de `direccionCompleta` (REQ-U5) DEBE recalcularse ante cualquier cambio de los 7 campos de dirección que lo componen — el usuario decide si la usa (botón "usar") o mantiene su propio texto; el campo del formulario nunca se sobreescribe automáticamente mientras el usuario lo esté editando.
 
 ### Unwanted (si X entonces)
 
@@ -172,16 +172,16 @@ Cada REQ de arriba DEBE tener al menos un test que:
 
 Sin eventos de auditoría propios del frontend. Los ocho eventos del módulo ya se registran en el backend vía `registrarAuditoria` (`sucursales.routes.ts`/`almacenes.routes.ts`, `SPEC-014` §Auditoría) al completarse cada mutación — el frontend no ejecuta lógica adicional, solo dispara las peticiones correctas:
 
-| Constante              | Cuándo se registra (backend)                                              |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `SUCURSAL_CREATED`      | Al completar `POST /api/v1/sucursales` (`SucursalCrearForm`)               |
-| `SUCURSAL_UPDATED`      | Al completar `PATCH /api/v1/sucursales/:id` (REQ-E3)                       |
-| `SUCURSAL_DESACTIVADA`  | Al completar `PATCH /api/v1/sucursales/:id/estado` con `activo: false`     |
-| `SUCURSAL_ACTIVADA`     | Al completar `PATCH /api/v1/sucursales/:id/estado` con `activo: true`      |
-| `ALMACEN_CREATED`       | Al completar `POST /api/v1/sucursales/:sucursalId/almacenes` (REQ-E7)      |
-| `ALMACEN_UPDATED`       | Al completar `PATCH /api/v1/almacenes/:id` (REQ-E6)                        |
-| `ALMACEN_DESACTIVADO`   | Al completar `PATCH /api/v1/almacenes/:id/estado` con `activo: false`      |
-| `ALMACEN_ACTIVADO`      | Al completar `PATCH /api/v1/almacenes/:id/estado` con `activo: true`       |
+| Constante              | Cuándo se registra (backend)                                           |
+| ---------------------- | ---------------------------------------------------------------------- |
+| `SUCURSAL_CREATED`     | Al completar `POST /api/v1/sucursales` (`SucursalCrearForm`)           |
+| `SUCURSAL_UPDATED`     | Al completar `PATCH /api/v1/sucursales/:id` (REQ-E3)                   |
+| `SUCURSAL_DESACTIVADA` | Al completar `PATCH /api/v1/sucursales/:id/estado` con `activo: false` |
+| `SUCURSAL_ACTIVADA`    | Al completar `PATCH /api/v1/sucursales/:id/estado` con `activo: true`  |
+| `ALMACEN_CREATED`      | Al completar `POST /api/v1/sucursales/:sucursalId/almacenes` (REQ-E7)  |
+| `ALMACEN_UPDATED`      | Al completar `PATCH /api/v1/almacenes/:id` (REQ-E6)                    |
+| `ALMACEN_DESACTIVADO`  | Al completar `PATCH /api/v1/almacenes/:id/estado` con `activo: false`  |
+| `ALMACEN_ACTIVADO`     | Al completar `PATCH /api/v1/almacenes/:id/estado` con `activo: true`   |
 
 ## Dependencias
 

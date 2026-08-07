@@ -3,8 +3,10 @@ import { z } from 'zod';
 // Réplica de crearSucursalSchema (api-pos/src/validators/sucursales.validator.ts, SPEC-014), con
 // una diferencia deliberada: `codigoPersonalizable` se captura aquí como `codigoSufijo` (sin el
 // prefijo "SUC-", ver SucursalCodigoInput/SPEC-012 REQ-U4) — el prefijo se concatena en el submit
-// de `SucursalCrearForm`, nunca en este schema. `direccionCompleta` tampoco es un campo: es estado
-// derivable (REQ-U5), se calcula con `buildDireccionCompleta` y se agrega al payload en el submit.
+// de `SucursalCrearForm`, nunca en este schema. `direccionCompleta` (REQ-U5, actualizado) es un
+// campo opcional de override: por defecto se usa el valor calculado por `buildDireccionCompleta`,
+// pero el usuario puede reescribirlo; si lo deja vacío, el submit de `SucursalCrearForm` recae en
+// el valor calculado.
 export const crearSucursalSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido').max(120),
   codigoSufijo: z.string().max(16, 'Máximo 16 caracteres').optional(),
@@ -17,6 +19,7 @@ export const crearSucursalSchema = z.object({
   municipio: z.string().min(1, 'El municipio es requerido').max(80),
   estado: z.string().min(1, 'El estado es requerido').max(60),
   codigoPostal: z.string().length(5, 'El código postal debe tener exactamente 5 caracteres'),
+  direccionCompleta: z.string().max(500, 'Máximo 500 caracteres').optional(),
   // REQ-U8 — Ventas/Mermas/Tránsito no son campos del formulario (siempre se crean); solo Reserva y
   // Apartados son elegibles por el usuario.
   incluirReserva: z.boolean().default(false),

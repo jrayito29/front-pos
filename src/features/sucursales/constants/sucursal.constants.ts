@@ -78,12 +78,13 @@ export interface AlmacenDefaultInfo {
   nombre: string;
   obligatorio: boolean;
   flag?: 'incluirReserva' | 'incluirApartados';
+  description: string
 }
 
 export const ALMACENES_DEFAULT_INFO: AlmacenDefaultInfo[] = [
-  { tipo: TIPO_ALMACEN.VENTAS, nombre: 'Almacén de Ventas', obligatorio: true },
-  { tipo: TIPO_ALMACEN.MERMAS, nombre: 'Almacén de Mermas y Devoluciones', obligatorio: true },
-  { tipo: TIPO_ALMACEN.TRANSITO, nombre: 'Almacén de Tránsito', obligatorio: true },
-  { tipo: TIPO_ALMACEN.RESERVA, nombre: 'Bodega de Reserva', obligatorio: false, flag: 'incluirReserva' },
-  { tipo: TIPO_ALMACEN.APARTADOS, nombre: 'Almacén de Apartados', obligatorio: false, flag: 'incluirApartados' },
+  { tipo: TIPO_ALMACEN.VENTAS, nombre: 'Almacén de Ventas', obligatorio: true, description: 'Almacén principal de exhibición y venta al público.' },
+  { tipo: TIPO_ALMACEN.MERMAS, nombre: 'Almacén de Mermas y Devoluciones', obligatorio: true, description: 'Registro de devoluciones, mermas y productos dañados.' },
+  { tipo: TIPO_ALMACEN.TRANSITO, nombre: 'Almacén de Tránsito', obligatorio: true, description: 'Virtual: stock en tránsito entre sucursales durante un traspaso.' },
+  { tipo: TIPO_ALMACEN.RESERVA, nombre: 'Bodega de Reserva', obligatorio: false, flag: 'incluirReserva', description: 'Bodega trasera o stock de reserva físico.' },
+  { tipo: TIPO_ALMACEN.APARTADOS, nombre: 'Almacén de Apartados', obligatorio: false, flag: 'incluirApartados', description: 'Virtual: stock reservado por anticipos de clientes.' },
 ];

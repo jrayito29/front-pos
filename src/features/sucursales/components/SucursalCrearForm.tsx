@@ -37,7 +37,7 @@ export function SucursalCrearForm() {
     control: form.control,
     name: ['calle', 'numeroExterior', 'numeroInterior', 'colonia', 'municipio', 'estado', 'codigoPostal'],
   });
-  const direccionCompleta = buildDireccionCompleta({
+  const direccionCompletaSugerida = buildDireccionCompleta({
     calle: calle ?? '',
     numeroExterior: numeroExterior ?? '',
     numeroInterior: numeroInterior || undefined,
@@ -48,12 +48,13 @@ export function SucursalCrearForm() {
   });
 
   function onSubmit(values: CrearSucursalOutput) {
-    const { codigoSufijo, incluirReserva, incluirApartados, email, telefono, ...direccionFields } = values;
+    const { codigoSufijo, incluirReserva, incluirApartados, email, telefono, direccionCompleta, ...direccionFields } =
+      values;
 
     crearSucursal.mutate(
       {
         ...direccionFields,
-        direccionCompleta,
+        direccionCompleta: direccionCompleta?.trim() || direccionCompletaSugerida,
         codigoPersonalizable: codigoSufijo ? `SUC-${codigoSufijo}` : undefined,
         telefono: telefono || undefined,
         email: email || undefined,
@@ -100,7 +101,7 @@ export function SucursalCrearForm() {
           </div>
         </fieldset>
 
-        <SucursalDireccionFields direccionCompleta={direccionCompleta} />
+        <SucursalDireccionFields direccionCompletaSugerida={direccionCompletaSugerida} />
 
         <SucursalAlmacenesOpcionalesFields />
 
