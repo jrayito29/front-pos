@@ -20,18 +20,18 @@ export const SucursalCodigoInput = forwardRef<HTMLInputElement, SucursalCodigoIn
           Código (opcional)
         </label>
         <div className="relative">
-          <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-base text-foreground-muted">
+          {/* <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-base text-foreground-muted">
             SUC-
-          </span>
+          </span> */}
           <input
             ref={ref}
             id={inputId}
             type="text"
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
-            className={`h-9 w-full rounded-lg border bg-background py-2 pl-11 pr-3.5 text-base text-foreground transition-colors duration-150 placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-green/40 disabled:cursor-not-allowed disabled:opacity-50 ${
-              error ? 'border-brand-coral' : 'border-border focus:border-brand-green'
-            } ${className}`}
+            placeholder='SUC-'
+            className={`h-9 w-full rounded-lg border bg-background py-2 pl-3 pr-3.5 text-base text-foreground transition-colors duration-150 placeholder:text-foreground-muted focus:outline-none focus:ring-2 focus:ring-brand-green/40 disabled:cursor-not-allowed disabled:opacity-50 ${error ? 'border-brand-coral' : 'border-border focus:border-brand-green'
+              } ${className}`}
             {...props}
           />
         </div>
