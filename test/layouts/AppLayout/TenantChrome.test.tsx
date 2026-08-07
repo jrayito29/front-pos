@@ -15,7 +15,7 @@ const TODAS_LAS_CLAVES = [
   'modulo.cotizaciones',
   'modulo.inventario',
   'modulo.productos',
-  'modulo.almacenes',
+  'modulo.sucursales',
   'modulo.clientes',
   'modulo.categorias',
 ];
@@ -102,7 +102,9 @@ describe('TenantChrome', () => {
     expect(screen.queryByRole('link', { name: 'Cotizaciones' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Inventario' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Productos' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Almacenes' })).not.toBeInTheDocument();
+    // SPEC-012 — "Sucursales" ahora vive bajo el grupo "Configuración" (gate `modulo.sucursales`),
+    // no como ítem raíz.
+    expect(screen.queryByRole('link', { name: 'Sucursales' })).not.toBeInTheDocument();
   });
 
   // spec:SPEC-008:REQ-U12 (RESPUESTA-003 — bug de accesoTotal para superadmin)
@@ -118,9 +120,10 @@ describe('TenantChrome', () => {
     expect(screen.getByRole('link', { name: 'Cotizaciones' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Inventario' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Productos' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Almacenes' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Clientes' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Categorías' })).toBeInTheDocument();
+    // SPEC-012 REQ-U11 — sub-ítem del grupo "Configuración", junto a Categorías.
+    expect(screen.getByRole('link', { name: 'Sucursales' })).toBeInTheDocument();
     // spec:SPEC-011:REQ-U8 — accesoTotal (superadmin) también satisface el gate por `soloRol`.
     expect(screen.getByRole('link', { name: 'Usuarios' })).toBeInTheDocument();
   });
@@ -144,8 +147,9 @@ describe('TenantChrome', () => {
     expect(screen.queryByRole('link', { name: 'Usuarios' })).not.toBeInTheDocument();
   });
 
-  // spec:SPEC-010:REQ-U8 — un grupo sin ningún sub-ítem visible se oculta por completo (hoy
-  // "Configuración" solo agrupa Categorías, así que perder ese permiso oculta el grupo entero).
+  // spec:SPEC-010:REQ-U8 / spec:SPEC-012:REQ-U11 — un grupo sin ningún sub-ítem visible se oculta
+  // por completo; ninguno de los módulos activos en este fixture (`modulo.ventas`) es sub-ítem de
+  // "Configuración" (Categorías, Sucursales, Usuarios), así que el grupo entero desaparece.
   it('oculta el grupo "Configuración" por completo cuando ningún sub-ítem es visible para el usuario', async () => {
     useSessionStore
       .getState()
@@ -157,6 +161,7 @@ describe('TenantChrome', () => {
     expect(await screen.findByRole('link', { name: 'Ventas' })).toBeInTheDocument();
     expect(screen.queryByText('Configuración')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Categorías' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Sucursales' })).not.toBeInTheDocument();
   });
 
   // spec:SPEC-008:REQ-X2 (fail-closed)

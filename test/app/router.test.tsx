@@ -129,6 +129,52 @@ describe('AppRouter — rutas protegidas dentro de AppLayout (SPEC-008)', () => 
     expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
   });
 
+  // spec:SPEC-012:REQ-X3 — mismo criterio que /categorias, gate independiente (modulo.sucursales)
+  it('/sucursales redirige a /no-autorizado cuando el módulo no está activo para el usuario', async () => {
+    vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = permisosYPerfilAdapter();
+
+    renderAt(ROUTES.SUCURSALES);
+
+    expect(await screen.findByText('Acceso no autorizado')).toBeInTheDocument();
+  });
+
+  // spec:SPEC-012:REQ-U11 — wiring real de RequirePermission + lazy() para el módulo nuevo
+  it('/sucursales renderiza SucursalesListPage cuando el módulo está activo para el usuario', async () => {
+    vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);
+    useSessionStore
+      .getState()
+      .setTenantSession({ accessToken: 'access-1', refreshToken: 'refresh-1', usuarioId: 'usuario-9', empresaId: 'empresa-9' });
+    apiClient.defaults.adapter = (async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+      if (config.url === '/auth/perfil') {
+        return {
+          data: { success: true, data: { nombre: 'Ana García', empresa: { nombre: 'Distribuidora del Norte', logoUrl: null } } },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      if (config.url === '/sucursales') {
+        return { data: { success: true, data: [], meta: { page: 1, limit: 20, total: 0 } }, status: 200, statusText: 'OK', headers: {}, config };
+      }
+      return {
+        data: { success: true, data: { userId: 'usuario-9', role: 'admin', accesoTotal: false, modulos: [{ modulo: 'modulo.sucursales', activo: true, soloAdmin: false, fuenteModulo: 'plan', esOverrideModulo: false, acciones: [{ clave: 'sucursales.ver', permitido: true }] }] } },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    }) as AxiosAdapter;
+
+    renderAt(ROUTES.SUCURSALES);
+
+    expect(await screen.findByRole('heading', { name: 'Sucursales' }, { timeout: 5000 })).toBeInTheDocument();
+  });
+
   // spec:SPEC-011:REQ-X3 — wiring real de RequireRole (gate por rol estático, no RequirePermission)
   it('/usuarios redirige a /no-autorizado cuando el rol activo no es superadmin', async () => {
     vi.spyOn(useSessionStore.persist, 'hasHydrated').mockReturnValue(true);

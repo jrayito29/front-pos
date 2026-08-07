@@ -32,17 +32,25 @@ describe('flattenNavItems', () => {
 });
 
 describe('TENANT_NAV', () => {
-  // spec:SPEC-011:REQ-U8 — el grupo "configuracion" ahora incluye también "usuarios", gateado por
-  // `soloRol` en vez de `modulo`.
-  it('incluye el grupo "configuracion" con "categorias" y "usuarios" como sub-ítems', () => {
+  // spec:SPEC-011:REQ-U8 / spec:SPEC-012:REQ-U11 — el grupo "configuracion" incluye "categorias",
+  // "sucursales" (reemplaza al antiguo ítem raíz "almacenes") y "usuarios" (gateado por `soloRol`
+  // en vez de `modulo`).
+  it('incluye el grupo "configuracion" con "categorias", "sucursales" y "usuarios" como sub-ítems', () => {
     const configuracion = TENANT_NAV.find((entry) => entry.key === 'configuracion');
     expect(configuracion).toBeDefined();
     expect(isNavGroup(configuracion!)).toBe(true);
     if (isNavGroup(configuracion!)) {
-      expect(configuracion.items).toHaveLength(2);
+      expect(configuracion.items).toHaveLength(3);
       expect(configuracion.items[0]).toMatchObject({ key: 'categorias', to: '/categorias', modulo: 'modulo.categorias' });
-      expect(configuracion.items[1]).toMatchObject({ key: 'usuarios', to: '/usuarios', soloRol: 'superadmin' });
-      expect(configuracion.items[1].modulo).toBeUndefined();
+      expect(configuracion.items[1]).toMatchObject({ key: 'sucursales', to: '/sucursales', modulo: 'modulo.sucursales' });
+      expect(configuracion.items[2]).toMatchObject({ key: 'usuarios', to: '/usuarios', soloRol: 'superadmin' });
+      expect(configuracion.items[2].modulo).toBeUndefined();
     }
+  });
+
+  // spec:SPEC-012:REQ-U11 — el antiguo ítem raíz "Almacenes" (RouteStub sin implementar) se retira
+  // por completo del menú de nivel raíz.
+  it('no incluye ningún ítem raíz "almacenes"', () => {
+    expect(TENANT_NAV.find((entry) => entry.key === 'almacenes')).toBeUndefined();
   });
 });

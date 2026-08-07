@@ -23,7 +23,6 @@ export const ROUTES = {
   // en `<Route path=...>` (app/router.tsx) y `productoDetalleRoute()` (abajo) construye el href real.
   PRODUCTOS_NUEVO: '/productos/nuevo',
   PRODUCTOS_DETALLE: '/productos/:id',
-  ALMACENES: '/almacenes',
   CLIENTES: '/clientes',
   // Módulo de gestión de Categorías — crear/editar/detalle viven en modales sobre este único listado
   // (decisión de producto: pocos campos, no ameritan rutas propias como Productos), protegido por
@@ -31,6 +30,17 @@ export const ROUTES = {
   // ver SPEC-003 seed). Agrupado bajo "Configuración" en el sidebar (navConfig.ts) — agrupación
   // puramente visual del frontend, sin relación con `modulo.configuracion` del backend.
   CATEGORIAS: '/categorias',
+  // Módulo de gestión de Sucursales y Almacenes (SPEC-012) — a diferencia de Categorías, crear y
+  // ver/editar Sucursal viven en rutas propias (mismo criterio que Productos: Ver y Editar
+  // comparten ruta, alternando modo con el botón "Editar"); los Almacenes de una sucursal no tienen
+  // ruta propia, se gestionan en la tab "Almacenes" de SUCURSALES_DETALLE (el backend no expone un
+  // listado global de almacenes). Protegido por RequirePermission con `modulo.sucursales`. Agrupado
+  // bajo "Configuración" en el sidebar (navConfig.ts), junto a Categorías. Reemplaza al antiguo
+  // ítem raíz `ALMACENES` (`RouteStub` sin implementar, retirado en SPEC-012 — el backend nunca
+  // soportó un listado global de almacenes que esa ruta stub asumía).
+  SUCURSALES: '/sucursales',
+  SUCURSALES_NUEVO: '/sucursales/nuevo',
+  SUCURSALES_DETALLE: '/sucursales/:id',
   // Módulo de gestión de Usuarios (SPEC-011) — exclusivo superadmin, gateado por rol estático
   // (app/RequireRole), no por RequirePermission: no existe `modulo.usuarios` en el catálogo
   // dinámico de permisos (el backend gatea sus endpoints con `verificarRole` directo). Distinto de
@@ -53,3 +63,7 @@ export const ROUTES = {
 // es el patrón `:id` que consume `<Route path=...>`; esta función construye el href real para
 // `navigate()`/`<Link>`. Vive fuera de `ROUTES` porque no es un valor estático.
 export const productoDetalleRoute = (id: string): string => `/productos/${id}`;
+
+// SPEC-012 — mismo criterio que `productoDetalleRoute`: construye el href real de
+// `ROUTES.SUCURSALES_DETALLE` para `navigate()`/`<Link>`.
+export const sucursalDetalleRoute = (id: string): string => `/sucursales/${id}`;

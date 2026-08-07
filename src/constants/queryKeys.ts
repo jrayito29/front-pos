@@ -46,3 +46,13 @@ export const unidadesMedidaQueryKey = (params: object) => ['unidades-medida', pa
 // (invalidateUsuarioQueries) invalida listado + detalle con una sola llamada.
 export const usuariosQueryKey = (filtros: object) => ['usuarios', 'listado', filtros] as const;
 export const usuarioQueryKey = (id: string | undefined) => ['usuarios', 'detalle', id] as const;
+
+// SPEC-012 — Módulo de gestión de Sucursales y Almacenes. GET /api/v1/sucursales (listado),
+// GET /api/v1/sucursales/:id (detalle) y GET /api/v1/sucursales/:sucursalId/almacenes (tab
+// Almacenes del detalle). Prefijo `'sucursales'` compartido por los tres —
+// `invalidateQueries({ queryKey: ['sucursales'] })` (invalidateSucursalQueries) invalida listado,
+// detalle y la tabla de almacenes de cualquier sucursal con una sola llamada.
+export const sucursalesQueryKey = (filtros: object) => ['sucursales', 'listado', filtros] as const;
+export const sucursalQueryKey = (id: string | undefined) => ['sucursales', 'detalle', id] as const;
+export const almacenesDeSucursalQueryKey = (sucursalId: string | undefined, filtros: object) =>
+  ['sucursales', 'almacenes', sucursalId, filtros] as const;

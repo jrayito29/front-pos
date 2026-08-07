@@ -64,7 +64,6 @@ export const TENANT_NAV: NavEntry[] = [
   { key: 'cotizaciones', label: 'Cotizaciones', to: ROUTES.COTIZACIONES, icon: CotizacionesIcon, modulo: 'modulo.cotizaciones' },
   { key: 'inventario', label: 'Inventario', to: ROUTES.INVENTARIO, icon: InventarioIcon, modulo: 'modulo.inventario' },
   { key: 'productos', label: 'Productos', to: ROUTES.PRODUCTOS, icon: ProductosIcon, modulo: 'modulo.productos' },
-  { key: 'almacenes', label: 'Almacenes', to: ROUTES.ALMACENES, icon: AlmacenesIcon, modulo: 'modulo.almacenes' },
   { key: 'clientes', label: 'Clientes', to: ROUTES.CLIENTES, icon: ClientesIcon, modulo: 'modulo.clientes' },
   {
     key: 'configuracion',
@@ -72,6 +71,11 @@ export const TENANT_NAV: NavEntry[] = [
     icon: ConfiguracionIcon,
     items: [
       { key: 'categorias', label: 'Categorías', to: ROUTES.CATEGORIAS, icon: CategoriasIcon, modulo: 'modulo.categorias' },
+      // SPEC-012 — reemplaza al antiguo ítem raíz "Almacenes" (modulo.almacenes, RouteStub sin
+      // implementar): el backend no expone un listado global de almacenes, solo por sucursal
+      // (GET /sucursales/:sucursalId/almacenes) — toda la gestión de almacenes vive dentro del
+      // detalle de cada sucursal (tab "Almacenes"). Reutiliza AlmacenesIcon (sin ícono nuevo).
+      { key: 'sucursales', label: 'Sucursales', to: ROUTES.SUCURSALES, icon: AlmacenesIcon, modulo: 'modulo.sucursales' },
       // SPEC-011 REQ-U8 — sin `modulo`: gate por `soloRol`, no por el catálogo dinámico de permisos.
       { key: 'usuarios', label: 'Usuarios', to: ROUTES.USUARIOS, icon: UsuariosIcon, soloRol: 'superadmin' },
     ],

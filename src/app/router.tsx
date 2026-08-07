@@ -57,6 +57,21 @@ const UsuariosListPage = lazy(() =>
   import('../features/usuarios/pages/UsuariosListPage').then((m) => ({ default: m.UsuariosListPage }))
 );
 
+// Módulo de Sucursales y Almacenes (SPEC-012) — a diferencia de Categorías, crear y ver/editar
+// Sucursal viven en rutas propias (mismo criterio que Productos: SPEC-006 REQ-U1/U4, import directo
+// al archivo de cada página, no al barrel `features/sucursales`). Los Almacenes de una sucursal no
+// tienen ruta propia (tab dentro de SUCURSALES_DETALLE, REQ-U7) — reemplaza al antiguo stub
+// `ROUTES.ALMACENES`.
+const SucursalesListPage = lazy(() =>
+  import('../features/sucursales/pages/SucursalesListPage').then((m) => ({ default: m.SucursalesListPage }))
+);
+const SucursalCrearPage = lazy(() =>
+  import('../features/sucursales/pages/SucursalCrearPage').then((m) => ({ default: m.SucursalCrearPage }))
+);
+const SucursalDetallePage = lazy(() =>
+  import('../features/sucursales/pages/SucursalDetallePage').then((m) => ({ default: m.SucursalDetallePage }))
+);
+
 export function AppRouter() {
   return (
     <RouteErrorBoundary>
@@ -105,13 +120,17 @@ export function AppRouter() {
               <Route element={<RequirePermission modulo="modulo.categorias" />}>
                 <Route path={ROUTES.CATEGORIAS} element={<CategoriasListPage />} />
               </Route>
+              {/* SPEC-012 — reemplaza al antiguo stub `modulo.almacenes`/ROUTES.ALMACENES (retirado:
+                  el backend nunca expuso un listado global de almacenes que esa ruta asumía). */}
+              <Route element={<RequirePermission modulo="modulo.sucursales" />}>
+                <Route path={ROUTES.SUCURSALES} element={<SucursalesListPage />} />
+                <Route path={ROUTES.SUCURSALES_NUEVO} element={<SucursalCrearPage />} />
+                <Route path={ROUTES.SUCURSALES_DETALLE} element={<SucursalDetallePage />} />
+              </Route>
               {/* SPEC-011 REQ-U3 — gate por rol estático (RequireRole), no por RequirePermission: no
                   existe `modulo.usuarios` en el catálogo dinámico de permisos. */}
               <Route element={<RequireRole role="superadmin" />}>
                 <Route path={ROUTES.USUARIOS} element={<UsuariosListPage />} />
-              </Route>
-              <Route element={<RequirePermission modulo="modulo.almacenes" />}>
-                <Route path={ROUTES.ALMACENES} element={<RouteStub title="Almacenes" />} />
               </Route>
               <Route element={<RequirePermission modulo="modulo.clientes" />}>
                 <Route path={ROUTES.CLIENTES} element={<RouteStub title="Clientes" />} />
