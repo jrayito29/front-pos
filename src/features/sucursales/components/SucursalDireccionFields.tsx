@@ -1,6 +1,12 @@
+import type { ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from '../../../components/Input';
 import type { CrearSucursalInput } from '../schemas/crearSucursal.schema';
+
+
+function sanitizeCodigoPostalInput(event: ChangeEvent<HTMLInputElement>) {
+  event.target.value = event.target.value.replace(/\D/g, '');
+}
 
 interface SucursalDireccionFieldsProps {
   direccionCompleta: string;
@@ -41,12 +47,12 @@ export function SucursalDireccionFields({ direccionCompleta }: SucursalDireccion
 
       <div className="sm:w-48">
         <Input
-          label="Código postal"
-          required
+          label="Código postal (opcional)"
           inputMode="numeric"
+          autoComplete="postal-code"
           maxLength={5}
           error={errors.codigoPostal?.message}
-          {...register('codigoPostal')}
+          {...register('codigoPostal', { onChange: sanitizeCodigoPostalInput })}
         />
       </div>
 

@@ -20,9 +20,6 @@ export const SucursalCodigoInput = forwardRef<HTMLInputElement, SucursalCodigoIn
           Código (opcional)
         </label>
         <div className="relative">
-          {/* <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-base text-foreground-muted">
-            SUC-
-          </span> */}
           <input
             ref={ref}
             id={inputId}

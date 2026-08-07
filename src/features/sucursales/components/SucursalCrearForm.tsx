@@ -88,8 +88,6 @@ export function SucursalCrearForm() {
           <Input label="Nombre" required error={form.formState.errors.nombre?.message} {...form.register('nombre')} />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <SucursalCodigoInput error={form.formState.errors.codigoSufijo?.message} {...form.register('codigoSufijo')} />
-            {/* <Input label="Teléfono" error={form.formState.errors.telefono?.message} {...form.register('telefono')} />
-             */}
             <Input
               label="Teléfono"
               type="tel"
