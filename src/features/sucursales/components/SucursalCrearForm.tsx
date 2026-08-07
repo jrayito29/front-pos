@@ -1,4 +1,5 @@
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
+import type { ChangeEvent } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -13,6 +14,12 @@ import { sucursalDetalleRoute, ROUTES } from '../../../constants/routes';
 import { crearSucursalSchema, type CrearSucursalInput, type CrearSucursalOutput } from '../schemas/crearSucursal.schema';
 import { useCrearSucursal } from '../hooks/useCrearSucursal';
 import { applySucursalApiError } from '../hooks/applySucursalApiError';
+
+// Mismo criterio que StepDatosPersonales (auth) — bloquea letras/signos en tiempo real; el Zod
+// schema sigue siendo la fuente de verdad para el formato final (10 dígitos).
+function sanitizeTelefonoInput(event: ChangeEvent<HTMLInputElement>) {
+  event.target.value = event.target.value.replace(/[^\d\s-]/g, '');
+}
 
 // SPEC-012 REQ-U2/U8 — formulario de creación completo (datos generales, dirección, almacenes que
 // se crearán), organizado en secciones delimitadas por línea — mismo criterio visual que
@@ -81,7 +88,16 @@ export function SucursalCrearForm() {
           <Input label="Nombre" required error={form.formState.errors.nombre?.message} {...form.register('nombre')} />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <SucursalCodigoInput error={form.formState.errors.codigoSufijo?.message} {...form.register('codigoSufijo')} />
-            <Input label="Teléfono" error={form.formState.errors.telefono?.message} {...form.register('telefono')} />
+            {/* <Input label="Teléfono" error={form.formState.errors.telefono?.message} {...form.register('telefono')} />
+             */}
+            <Input
+              label="Teléfono"
+              type="tel"
+              inputMode="numeric"
+              maxLength={12}
+              error={form.formState.errors.telefono?.message}
+              {...form.register('telefono', { onChange: sanitizeTelefonoInput })}
+            />
             <Input label="Email" type="email" error={form.formState.errors.email?.message} {...form.register('email')} />
           </div>
         </fieldset>
